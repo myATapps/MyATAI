@@ -1,9 +1,36 @@
-from kivy.app import App
-from kivy.uix.label import Label
+name: Build Android APK
+on: [push, workflow_dispatch]
 
-class TestApp(App):
-    def build(self):
-        return Label(text="AT PRO AI - APK Success!")
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-if __name__ == '__main__':
-    TestApp().run()
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav libgstreamer-plugins-base1.0-dev openjdk-17-jdk
+          pip install --upgrade pip
+          pip install buildozer cython
+
+      - name: Accept Android SDK Licenses
+        run: |
+          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+          # یہ لائن خود بخود تمام لائسنسز کو یس (yes) کر دے گی
+          yes | sdkmanager --licenses || true
+
+      - name: Build with Buildozer
+        run: buildozer android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: My-App-APK
+          path: bin/*.apk
