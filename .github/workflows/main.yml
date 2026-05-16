@@ -41,4 +41,3 @@ jobs:
         with:
           name: My-App-APK
           path: bin/*.apk
-Bahi 
