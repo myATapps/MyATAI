@@ -28,13 +28,11 @@ jobs:
 
       - name: Auto Accept Licenses & Run Buildozer
         run: |
-          # یہ کمانڈز بلڈوزر کو پرانے مستحکم ٹولز پر لاک کر دیں گی تاکہ ایرر نہ آئے
+          # آپ کا بنایا ہوا فولڈر پاتھ
           mkdir -p ~/.buildozer/android/platform/
-          export ANDROID_API=33
-          export ANDROID_NDK=25b
           
-          # بلڈوزر کمانڈ چلائیں اور لائسنسز خود بخود ایکسیپٹ کریں
-          yes | buildozer android debug
+          # ہم نے ورژنز کو براہِ راست بلڈوزر کی کمانڈ کے ساتھ جوڑ دیا ہے تاکہ ٹول چین کریش نہ ہو
+          yes | buildozer android debug --androidapi=33 --androidndk=25b
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
