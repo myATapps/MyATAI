@@ -10,8 +10,6 @@ orientation = portrait
 android.api = 34
 android.minapi = 21
 android.ndk = 26b
-# یہ لائن جادو کرے گی، بلڈوزر کو ورژن 37 ڈاؤن لوڈ کرنے سے روکے گی
-android.build_tools_version = 34.0.0
 android.archs = arm64-v8a
 [buildozer]
 log_level = 2
