@@ -8,7 +8,7 @@ version = 0.1
 requirements = python3, kivy
 orientation = portrait
 
-# ورژنز کو فائل کے اندر پکا لاک کر دیا تاکہ یہ واپس اینڈرائیڈ 21 پر نہ بھاگے
+# یہ اینڈرائیڈ کے مستحکم ورژنز ہیں جو آپ کے ٹیسٹ کوڈ کو کریش ہونے سے بچائیں گے
 android.api = 33
 android.minapi = 21
 android.ndk = 25b
