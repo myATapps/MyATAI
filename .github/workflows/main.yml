@@ -26,17 +26,14 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==3.0.10
 
-      - name: Accept Android SDK Licenses Officially
+      - name: Auto Accept Android Licenses
         run: |
-          # گوگل کا آفیشل طریقہ: بلڈوزر کے رن ہونے سے پہلے ہی لائسنس فائل بنا دیتے ہیں
-          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-          
-          # یہ اینڈرائیڈ کے آفیشل لائسنس ہیشز ہیں جو بلڈوزر کو چپ کروا دیں گے
-          echo -e "\n2410ea9d0668f1c67c3b905693433097a3d2492e" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo -e "\n8516d1387e2531dd32d47d4e30b6df35b441da02" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          # یہ گوگل کا آفیشل طریقہ ہے جو بلڈوزر کے چلنے سے پہلے ہی گٹ ہب کے ڈیفالٹ ٹولز کے لائسنسز کو پاس کر دیتا ہے
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Build with Buildozer
         run: |
+          # اب بلڈوزر اپنے پاتھ خود بنائے گا اور اسے کوئی مینوئل رکاوٹ نہیں ملے گی
           buildozer android debug
 
       - name: Upload APK
