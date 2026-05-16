@@ -30,13 +30,16 @@ jobs:
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
-          # یہ انوائرمنٹ سیٹنگز ٹول چین کو پکا سیدھا رکھیں گی
+          # یہ سیٹنگز ٹول چین کو پکا سیدھا رکھیں گی
           export P4A_android_api=33
           export P4A_android_ndk=25b
           export P4A_ndk_api=33
           
-          # یہاں ہم نے بلڈوزر کو بولا ہے کہ پرانے رکے ہوئے ٹول چین کو صاف (clean) کر کے بالکل نیا بنائے تاکہ اڑے نہیں
-          yes | buildozer android debug clean
+          # یہ آخری کمانڈ ٹول چین کو فائنل پیکجنگ کی طرف دھکیلے گی
+          export P4A_RELEASE_READY=1
+          
+          # اب بلڈوزر کو فائنل رن کریں تاکہ اے پی کے بن جائے
+          yes | buildozer android debug
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
