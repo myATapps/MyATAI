@@ -27,18 +27,16 @@ jobs:
           pip install buildozer cython==0.29.36
 
       - name: Auto Accept Licenses & Run Buildozer
-        # یہاں ہم نے گٹ ہب کے آفیشل طریقے سے ویریبلز کو رنر کے اندر پکا لاک کر دیا ہے
-        env:
-          P4A_android_api: "33"
-          P4A_android_ndk: "25b"
-          P4A_ndk_api: "33"
-          ANDROID_API: "33"
-          ANDROID_NDK: "25b"
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
-          # اب بلڈوزر ان لاک شدہ سیٹنگز کے ساتھ چلے گا اور کریش نہیں ہوگا
-          yes | buildozer android debug
+          # یہ انوائرمنٹ سیٹنگز ٹول چین کو پکا سیدھا رکھیں گی
+          export P4A_android_api=33
+          export P4A_android_ndk=25b
+          export P4A_ndk_api=33
+          
+          # یہاں ہم نے بلڈوزر کو بولا ہے کہ پرانے رکے ہوئے ٹول چین کو صاف (clean) کر کے بالکل نیا بنائے تاکہ اڑے نہیں
+          yes | buildozer android debug clean
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
