@@ -28,8 +28,8 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # یہ کمانڈ خود کار طریقے سے تمام لائسنسز کو قبول کرے گی
-          yes | buildozer android debug
+          # یہاں ہم نے مینوئل پائپ ہٹا دیا ہے تاکہ بروکن پائپ کا ایرر نہ آئے
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
