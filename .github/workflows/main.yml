@@ -26,14 +26,18 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==0.29.36
 
-      - name: Auto Accept Android SDK Licenses
+      - name: Create Offline Licenses to Bypass sdkmanager
         run: |
-          # یہ لائن بلڈوزر کے رن ہونے سے پہلے ہی گوگل کے سارے لائسنس آفیشل طریقے سے قبول کر لے گی
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          # یہ کمانڈ بلڈوزر کے متوقع فولڈر میں پہلے سے ہی منظور شدہ لائسنس فائلز لکھ دے گی
+          # اس سے بلڈوزر انٹرنیٹ پر جا کر لائسنس مانگے گا ہی نہیں اور نہ ہی Aidl کا ایرر دے گا
+          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
+          echo -e "\n2410ea9d0668f1c67c3b905693433097a3d2492e" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo -e "\n8516d1387e2531dd32d47d4e30b6df35b441da02" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          echo -e "\n6072092d53356e1a054459b0ee50489b8281e6d2" > ~/.buildozer/android/platform/android-sdk/licenses/android-googletv-license
 
       - name: Build with Buildozer
         run: |
-          # اب بلڈوزر بغیر کسی مینوئل پاتھ کی رکاوٹ کے سکون سے رن ہوگا
+          # اب بلڈوزر سکون سے بغیر کسی سوال کے رن ہوگا
           buildozer android debug
 
       - name: Upload APK
