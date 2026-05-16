@@ -28,19 +28,15 @@ jobs:
 
       - name: Auto Accept Licenses & Run Buildozer
         run: |
+          # 1. بلڈوزر کا پلیٹ فارم فولڈر بنانا
           mkdir -p ~/.buildozer/android/platform/
           
-          # یہ اینڈرائیڈ کی اپنی آفیشل کمانڈ ہے جو لائسنس کو بیک گراؤنڈ میں خودکار قبول کرتی ہے
+          # 2. اینڈرائیڈ لائسنسز کو خودکار قبول کرنا
           yes | sdkmanager --licenses || true
           
-          # یہ انوائرمنٹ سیٹنگز ٹول چین کو پکا سیدھا رکھیں گی
-          export P4A_android_api=33
-          export P4A_android_ndk=25b
-          export P4A_ndk_api=33
-          
-          # اب بلڈوزر کو فائنل رن کریں، یہ بنا کسی نخرے کے پورا ٹائم لے کر بلڈ کرے گا
-          yes | buildozer android debug
-          
+          # 3. انوائرمنٹ ورژنز کو کمانڈ کے ساتھ ہی رن کرنا تاکہ ٹول چین کریش نہ ہو
+          yes | P4A_android_api=33 P4A_android_ndk=25b P4A_ndk_api=33 buildozer android debug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
