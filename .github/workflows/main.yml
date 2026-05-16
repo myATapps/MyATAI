@@ -30,7 +30,11 @@ jobs:
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
-          # اب یہ بغیر کسی نخرے کے spec فائل کے مطابق آفیشل بلڈ بنائے گا
+          # یہ دو لائنیں بلڈوزر کے اندرونی ٹول چین (p4a) کو زبردستی اینڈرائیڈ 33 پر لاک کر دیں گی
+          export ANDROID_API=33
+          export APP_ANDROID_API=33
+          
+          # اب بلڈوزر رن کریں، یہ آپ کے پرانے کوڈ کے مطابق بالکل صحیح چلے گا
           yes | buildozer android debug
           
       - name: Upload APK
