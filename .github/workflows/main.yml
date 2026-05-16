@@ -11,7 +11,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -24,15 +24,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip
           pip install --upgrade pip
-          pip install buildozer cython==3.0.10
+          pip install buildozer cython==0.29.36
 
       - name: Auto Accept Android SDK Licenses
         run: |
-          # گٹ ہب کے کمپیوٹر پر موجود آفیشل اینڈرائیڈ ٹولز کے لائسنسز کو خودکار یس کریں
-          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          # یہ لائن بلڈوزر کے رن ہونے سے پہلے ہی گوگل کے سارے لائسنس آفیشل طریقے سے قبول کر لے گی
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Build with Buildozer
         run: |
+          # اب بلڈوزر بغیر کسی مینوئل پاتھ کی رکاوٹ کے سکون سے رن ہوگا
           buildozer android debug
 
       - name: Upload APK
