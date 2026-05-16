@@ -27,18 +27,18 @@ jobs:
           pip install buildozer cython==0.29.36
 
       - name: Auto Accept Licenses & Run Buildozer
+        # یہ گٹ ہب کا آفیشل طریقہ ہے جو بلڈوزر کو شروع میں ہی کریش ہونے سے روکتا ہے
+        shell: bash
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
-          # یہ تین لائنیں ٹول چین کو پکا سیدھا رکھیں گی
+          # یہ انوائرمنٹ سیٹنگز ٹول چین کو پکا سیدھا رکھیں گی
           export P4A_android_api=33
           export P4A_android_ndk=25b
           export P4A_ndk_api=33
-          
-          # یہ لائن بلڈوزر کو مجبور کرے گی کہ وہ گٹ ہب کا اپنا آفیشل ایس ڈی کے استعمال کرے اور پیچھے نہ بھاگے
           export ANDROID_HOME=$ANDROID_SDK_ROOT
           
-          # اب بلڈوزر کو فائنل رن کریں
+          # اب بلڈوزر کو رن کریں، یہ بنا کسی نخرے کے پورا ٹائم لے کر بلڈ کرے گا
           yes | buildozer android debug
           
       - name: Upload APK
