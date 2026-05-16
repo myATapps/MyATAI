@@ -28,15 +28,14 @@ jobs:
 
       - name: Auto Accept Licenses & Run Buildozer
         run: |
-          # 1. بلڈوزر کا ڈیفالٹ پلیٹ فارم فولڈر تیار کریں
           mkdir -p ~/.buildozer/android/platform/
           
-          # 2. یہ کِوی ڈویلپرز کا آفیشل طریقہ ہے جو ٹول چین (p4a) کو مجبور کرتا ہے کہ وہ اینڈرائیڈ 33 اور این ڈی کے 25b ہی استعمال کرے
+          # یہ تین لائنیں گٹ ہب کے اصلی اور مکمل اینڈرائیڈ راستوں کو بلڈوزر کے ٹول چین کے اندر زبردستی گھسا دیں گی
           export P4A_android_api=33
           export P4A_android_ndk=25b
-          export P4A_ndk_api=33
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
           
-          # 3. اب بلڈوزر چلائیں، یہ ان انوائرمنٹ ویریبلز کو سو فیصد مانے گا
+          # اب بلڈوزر چلائیں، یہ بنا کسی نخرے کے ان راستوں کو استعمال کر کے بلڈ مکمل کرے گا
           yes | buildozer android debug
           
       - name: Upload APK
