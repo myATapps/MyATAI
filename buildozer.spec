@@ -7,10 +7,14 @@ source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 requirements = python3, kivy
 orientation = portrait
+
+# ورژنز کو فائل کے اندر پکا لاک کر دیا تاکہ یہ واپس اینڈرائیڈ 21 پر نہ بھاگے
 android.api = 33
 android.minapi = 21
 android.ndk = 25b
+android.ndk_api = 33
 android.archs = arm64-v8a
+
 [buildozer]
 log_level = 2
 warn_on_root = 0
