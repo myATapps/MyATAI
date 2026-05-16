@@ -30,9 +30,9 @@ jobs:
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
-          # یہاں ہم نے این ڈی کے (NDK) کی اندرونی اے پی آئی کو بھی زبردستی 33 پر لاک کر دیا ہے تاکہ ٹول چین کریش نہ ہو
-          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
-
+          # اب یہ بغیر کسی نخرے کے spec فائل کے مطابق آفیشل بلڈ بنائے گا
+          yes | buildozer android debug
+          
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
