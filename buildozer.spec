@@ -8,7 +8,7 @@ version = 0.1
 requirements = python3, kivy
 orientation = portrait
 
-# یہ اینڈرائیڈ کے مستحکم ورژنز ہیں جو آپ کے ٹیسٹ کوڈ کو کریش ہونے سے بچائیں گے
+# اینڈرائیڈ کے مستحکم ورژنز
 android.api = 33
 android.minapi = 21
 android.ndk = 25b
