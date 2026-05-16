@@ -26,17 +26,13 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==3.0.10
 
-      - name: Build with Buildozer (Force GitHub SDK)
-        env:
-          # یہ تین لائنیں بلڈوزر کو گٹ ہب کے بنے بنائے اینڈرائیڈ ٹولز استعمال کرنے پر مجبور کریں گی جہاں Aidl موجود ہے
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_ROOT }}
+      - name: Auto Accept Android SDK Licenses
         run: |
-          # گوگل کے لائسنسز کو خود بخود قبول کریں
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          
-          # اب بلڈوزر چلائیں
+          # گٹ ہب کے کمپیوٹر پر موجود آفیشل اینڈرائیڈ ٹولز کے لائسنسز کو خودکار یس کریں
+          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Build with Buildozer
+        run: |
           buildozer android debug
 
       - name: Upload APK
