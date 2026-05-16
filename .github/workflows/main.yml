@@ -1,18 +1,47 @@
-[app]
-title = MyATAI
-package.name = myatai
-package.domain = org.atpro
-source.dir = .
-source.include_exts = py,png,jpg,kv,atlas
-version = 0.1
-requirements = python3==3.11.1,kivy==2.3.0,hostpython3==3.11.1
-orientation = portrait
-android.api = 34
-android.minapi = 21
-android.ndk = 26b
-# یہ لائن جادو کرے گی، بلڈوزر کو ورژن 37 ڈاؤن لوڈ کرنے سے روکے گی
-android.build_tools_version = 34.0.0
-android.archs = arm64-v8a
-[buildozer]
-log_level = 2
-warn_on_root = 0
+name: Build Android APK
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip
+          pip install --upgrade pip
+          pip install buildozer cython==3.0.10
+
+      - name: Accept Android SDK Licenses Manually
+        run: |
+          # بلڈوزر کا متوقع فولڈر پہلے ہی بنا کر لائسنس یس کر دیتے ہیں
+          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+          touch ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager
+          chmod +x ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager
+          
+          # رنر کے اپنے ٹولز کے لائسنسز کو بھی یس کرتے ہیں
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Build with Buildozer
+        run: |
+          buildozer android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: My-App-APK
+          path: bin/*.apk
