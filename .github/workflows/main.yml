@@ -26,9 +26,14 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==3.0.10
 
-      - name: Build with Buildozer
+      - name: Build with Buildozer (Using GitHub Native Android SDK)
         run: |
-          # یہاں ہم نے مینوئل پائپ ہٹا دیا ہے تاکہ بروکن پائپ کا ایرر نہ آئے
+          # یہاں ہم بلڈوزر کو گٹ ہب کے آفیشل اینڈرائیڈ ٹولز کا راستہ زبردستی دے رہے ہیں
+          # اس سے لائسنس مانگنے کا آپشن ہی بائی پاس ہو جائے گا
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          
+          # اب بلڈوزر کو رن کریں
           buildozer android debug
 
       - name: Upload APK
