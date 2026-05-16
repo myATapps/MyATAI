@@ -30,11 +30,16 @@ jobs:
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
-          # یہ ایک خفیہ کمانڈ ہے جو بلڈوزر کو خودکار لائسنس قبول کرنے پر مجبور کرتی ہے (بغیر yes | کے)
-          export AUTO_ACCEPT_AND_SDK_LICENSES=yaml
+          # یہ اینڈرائیڈ کی اپنی آفیشل کمانڈ ہے جو لائسنس کو بیک گراؤنڈ میں خودکار قبول کرتی ہے
+          yes | sdkmanager --licenses || true
           
-          # اب بلڈوزر سکون سے بغیر کسی پائپ کمانڈ کے آفیشل طریقے سے چلے گا
-          buildozer android debug
+          # یہ انوائرمنٹ سیٹنگز ٹول چین کو پکا سیدھا رکھیں گی
+          export P4A_android_api=33
+          export P4A_android_ndk=25b
+          export P4A_ndk_api=33
+          
+          # اب بلڈوزر کو فائنل رن کریں، یہ بنا کسی نخرے کے پورا ٹائم لے کر بلڈ کرے گا
+          yes | buildozer android debug
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
