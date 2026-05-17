@@ -26,7 +26,7 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==0.29.36
 
-      - - name: Auto Accept Licenses & Run Buildozer
+      - name: Auto Accept Licenses & Run Buildozer
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
