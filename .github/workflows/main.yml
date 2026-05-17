@@ -34,15 +34,31 @@ jobs:
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
 
-          # آپ کی لاجک کے مطابق بلڈوزر سے پہلے پائتھن ٹول چین کو ایکٹیو کرنا
+          # پائتھن ٹول چین کو ریڈی کرنا
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 فائنل فکس: 'yes' کا پائپ صرف 10 سیکنڈ چلے گا تاکہ لائسنس ایکسیپٹ ہوں اور پھر خود ہی ختم ہو جائے، جس سے بروکن پائپ کا رولا ہمیشہ کے لیے ختم ہو جائے گا
-          timeout 10s yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33 || true
+          # 🎯 آپ کی لاجک کا پکا علاج: ایک چھوٹا اسکرپٹ جو بیک گراؤنڈ میں 'yes' کو صرف ضرورت کے وقت چلائے گا اور کام ہوتے ہی ختم کر دے گا
+          python3 -c "
+          import subprocess, sys, time
+          p = subprocess.Popen(['buildozer', 'android', 'debug', '--androidapi=33', '--androidndk=25b', '--ndk-api=33'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
           
-          # اگر 10 سیکنڈ بعد بلڈوزر بیک گراؤنڈ پروسیس میں ہو تو اسے فائنل مکمل ہونے تک یہاں رن رکھنا
-          buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+          # شروع میں جب تک ٹولز اور لائسنس کا کام چل رہا ہے، یہ 'y' بھیجتا رہے گا
+          start_time = time.time()
+          while p.poll() is None:
+              line = p.stdout.readline()
+              if line:
+                  sys.stdout.write(line)
+                  sys.stdout.flush()
+                  # اگر 90 سیکنڈ گزر جائیں (یعنی لائسنس کا کام ہو چکا ہو)، تو 'yes' کا پائپ بند کر دو
+                  if time.time() - start_time < 90:
+                      try: p.stdin.write('y\n'); p.stdin.flush()
+                      except: pass
+                  else:
+                      try: p.stdin.close() # یہاں 'yes' خود بخود ختم ہو جائے گا اور بلڈوزر آگے بڑھے گا
+                      except: pass
+          sys.exit(p.returncode)
+          "
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
