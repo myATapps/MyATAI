@@ -26,32 +26,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Android SDK & Accept Licenses
+      - name: Auto Accept Licenses & Run Buildozer
         run: |
-          # 1. اینڈرائیڈ کمانڈ لائن ٹولز ڈاؤن لوڈ کرنا
-          mkdir -p ~/.android && touch ~/.android/repositories.cfg
-          mkdir -p ~/android-cmdline && cd ~/android-cmdline
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
-          unzip -q cmdline.zip && rm cmdline.zip
-          
-          # 2. آفیشل طریقے سے سارے لائسنس ایکسیپٹ کرنا
-          cd cmdline-tools/bin
-          yes | ./sdkmanager --sdk_root=$HOME/android-sdk --licenses
-          
-          # 3. بلڈوزر کو بتانا کہ ایس ڈی کے کا اصل فولڈر کہاں ہے تاکہ وہ دوبارہ ڈاؤن لوڈ نہ کرے
           mkdir -p ~/.buildozer/android/platform/
-          ln -s $HOME/android-sdk ~/.buildozer/android/platform/android-sdk
-
-      - name: Run Buildozer
-        run: |
-          # جاوا اور پائتھن پاتھ سیٹ کرنا
+          
+          # جاوا 17 کا انوائرمنٹ سیٹ کرنا
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
+
+          # پائتھن ٹول چین کو ریڈی کرنا
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
-
-          # 🎯 اب بلڈوزر بنا کسی 'yes' یا پائپ کے بالکل سیدھا اور کلین چلے گا
-          buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+          
+          # 🎯 پہلے والا کوڈ: 'stdbuf' پائپ کو آخر تک ٹوٹنے نہیں دے گا اور بلڈوزر پورا 4 منٹ چلے گا
+          stdbuf -oL yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
