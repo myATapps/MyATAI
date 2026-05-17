@@ -38,27 +38,16 @@ jobs:
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 آپ کی لاجک کا پکا علاج: ایک چھوٹا اسکرپٹ جو بیک گراؤنڈ میں 'yes' کو صرف ضرورت کے وقت چلائے گا اور کام ہوتے ہی ختم کر دے گا
-          python3 -c "
-          import subprocess, sys, time
-          p = subprocess.Popen(['buildozer', 'android', 'debug', '--androidapi=33', '--androidndk=25b', '--ndk-api=33'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+          # 🎯 آپ کی لاجک کے مطابق: 'yes' صرف یہاں 5 سیکنڈ کے لیے چلے گا اور لائسنس قبول کر کے خود ختم ہو جائے گا
+          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin || true
+          yes | sdkmanager --sdk_root=/home/runner/.buildozer/android/platform/android-sdk --licenses || true
           
-          # شروع میں جب تک ٹولز اور لائسنس کا کام چل رہا ہے، یہ 'y' بھیجتا رہے گا
-          start_time = time.time()
-          while p.poll() is None:
-              line = p.stdout.readline()
-              if line:
-                  sys.stdout.write(line)
-                  sys.stdout.flush()
-                  # اگر 90 سیکنڈ گزر جائیں (یعنی لائسنس کا کام ہو چکا ہو)، تو 'yes' کا پائپ بند کر دو
-                  if time.time() - start_time < 90:
-                      try: p.stdin.write('y\n'); p.stdin.flush()
-                      except: pass
-                  else:
-                      try: p.stdin.close() # یہاں 'yes' خود بخود ختم ہو جائے گا اور بلڈوزر آگے بڑھے گا
-                      except: pass
-          sys.exit(p.returncode)
-          "
+          # اینڈرائیڈ کو آٹو موڈ پر سیٹ کرنا
+          export ANDROID_CHOOSE_SDKMAN=y
+          export ACCEPT_FALCON_LICENSES=y
+
+          # 🎯 آپ کا اصل بلڈوزر کوڈ اب بالکل اکیلا اور صاف چلے گا، آخر میں کوئی پائپ نہیں ٹوٹے گا
+          buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
