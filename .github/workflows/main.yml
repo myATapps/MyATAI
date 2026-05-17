@@ -30,14 +30,14 @@ jobs:
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
-          # 🎯 جاوا 17 کا انوائرمنٹ سیٹ کرنا
+          # جاوا 17 کا انوائرمنٹ سیٹ کرنا
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
 
-          # 🎯 کوڈ میں پکا اضافہ: بلڈوزر سے پہلے پائتھن کا پاتھ اور ہوم لوکیشن لاک کرنا
+          # 🎯 آپ کی لاجک کے مطابق پکا اضافہ: بلڈوزر سے پہلے پائتھن ٹول چین کی کمانڈ کو ایکٹیو کرنا
+          python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
-          export PYTHONPATH=$pythonLocation/lib/python3.10/site-packages:$PYTHONPATH
-
+          
           # آپ کا اپنا اصل کوڈ جو نیچے ویسے ہی موجود ہے
           yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
 
