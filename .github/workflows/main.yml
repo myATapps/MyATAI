@@ -37,9 +37,22 @@ jobs:
           # پائتھن ٹول چین کو ریڈی کرنا
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
-
-          # 🎯 فائنل فکس: بغیر کسی 'yes' پائپ کے بلڈوزر کے اپنے آفیشل فلیگ کے ساتھ رن کرنا تاکہ سچی مچی APK بنے
-          buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33 --accept-sdk-license
+          
+          # 🎯 وہ پرانا اوکے طریقہ: 'yes |' لائیو چلے گا لیکن لاگ کو فائل میں ڈالنے سے پائپ لائن کبھی نہیں ٹوٹے گی
+          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33 > buildozer_output.log 2>&1 &
+          
+          # بلڈوزر کے بیک گراؤنڈ پروسیس کا انتظار کرنا اور لاگ اسکرین پر دکھانا
+          BUILDOZER_PID=$!
+          echo "Buildozer is running in background with PID: $BUILDOZER_PID"
+          
+          # جب تک بلڈوزر چل رہا ہے، لاگ پرنٹ کرو تاکہ پائپ لائن لائیو رہے
+          while kill -0 $BUILDOZER_PID 2>/dev/null; do
+              tail -n 20 buildozer_output.log
+              sleep 10
+          done
+          
+          # فائنل پورا لاگ اسکرین پر پرنٹ کرنا
+          cat buildozer_output.log
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
