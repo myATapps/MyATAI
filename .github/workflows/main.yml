@@ -38,8 +38,10 @@ jobs:
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 فائنل فکس: ہر 5 سیکنڈ بعد آرام سے 'y' بھیجنا تاکہ بفر نہ ٹوٹے اور بلڈوزر پورا ختم ہو
-          (while true; do echo "y"; sleep 5; done) | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+          # 🎯 آفیشل فکس: بلڈوزر کو کمانڈ کے اندر ہی لائسنس آٹو رن کرنے کا حکم دینا
+          # اس سے پائپ لائن کی ضرورت ختم ہو جائے گی اور بلڈوزر پورا کمپلیٹ ہوگا
+          export BUILDOZER_WARN_ON_ROOT=0
+          buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33 --accept-sdk-license
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
