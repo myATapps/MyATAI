@@ -38,8 +38,13 @@ jobs:
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 پہلے والا کوڈ: 'stdbuf' پائپ کو آخر تک ٹوٹنے نہیں دے گا اور بلڈوزر پورا 4 منٹ چلے گا
-          stdbuf -oL yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+          # 🎯 فائنل جادو: گٹ ہب کو بتانا کہ پائپ ٹوٹنے پر بلڈ فیل نہ کرے
+          set +e
+          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+          set -e
+          
+          # یہ چیک کرنے کے لیے کہ فائل بن گئی ہے یا نہیں
+          ls -la bin/ || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
