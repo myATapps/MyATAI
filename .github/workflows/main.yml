@@ -20,7 +20,7 @@ jobs:
           java-version: '17'
 
       - name: Install System Dependencies
-        run: |
+
           sudo apt-get update
           sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip
           pip install --upgrade pip
@@ -28,18 +28,20 @@ jobs:
 
       - name: Auto Accept Licenses & Run Buildozer
         run: |
-          mkdir -p ~/.buildozer/android/platform/
+          # 1. بلڈوزر کا اینڈرائیڈ فولڈر پہلے سے تیار کرنا
+          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses/
           
-          # یہ انوائرمنٹ سیٹنگز ٹول چین کو پکا سیدھا رکھیں گی
+          # 2. یہ وہ پکا طریقہ ہے جو اینڈرائیڈ لائسنس کی فائل براہِ راست بنا دیتا ہے 
+          # اس سے sdkmanager کو انٹرنیٹ پر جا کر لٹکنا ہی نہیں پڑے گا
+          echo -e "\n24106d7b501f8c99b31f130edcf4d74891793285\nd56f11ed256b468ad58d34168b49277fbe6c94f1\n266017f81e925049a12077f722157e494e0946fc" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          
+          # 3. انوائرمنٹ ویریبلز سیٹ کرنا
           export P4A_android_api=33
           export P4A_android_ndk=25b
           export P4A_ndk_api=33
           
-          # یہ لائن بلڈوزر کو اندرونی طور پر لائسنس خود ہی ایکسیپٹ کرنے پر مجبور کرے گی
-          export APP_ANDROID_ACCEPT_SDK_LICENSES=1
-          
-          # اب بلڈوزر کو رن کریں، یہ بنا کسی مینوئل sdkmanager کے چکر کے سیدھا چلے گا
-          yes | buildozer android debug
+          # 4. اب بلڈوزر بغیر کسی مینوئل پائپ یا sdkmanager کے رولے کے سیدھا رن ہوگا
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
