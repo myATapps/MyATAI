@@ -34,14 +34,14 @@ jobs:
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
 
-          # پائتھن ٹول چین کو ریڈی کرنا
+          # آپ کی لاجک کے مطابق پکا اضافہ: بلڈوزر سے پہلے پائتھن ٹول چین کو ایکٹیو کرنا
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 اینڈرائیڈ لائسنس کو بیک گراؤنڈ میں آٹو ایکسیپٹ موڈ پر ڈالنا
-          export ANDROID_CHOOSE_SDKMAN=y
+          # 🎯 آپ کا حکم: 'yes |' صرف اور صرف یہاں لائسنس قبول کرنے کے لیے آئے گا
+          yes | sdkmanager --licenses || true
           
-          # 🎯 فائنل فکس: 'yes |' کو ہٹا دیا تاکہ بروکن پائپ کا چھوٹا ایرر ختم ہو اور بلڈوزر صاف رن ہو
+          # بلڈوزر کی اپنی کمانڈ اب بالکل اکیلی اور صاف چلے گی، بغیر کسی پائپ بلاکنگ کے
           buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
 
       - name: Upload APK
