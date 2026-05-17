@@ -28,11 +28,17 @@ jobs:
 
       - name: Auto Accept Licenses & Run Buildozer
         run: |
-          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses/
-          echo -e "\n24106d7b501f8c99b31f130edcf4d74891793285\nd56f11ed256b468ad58d34168b49277fbe6c94f1\n266017f81e925049a12077f722157e494e0946fc" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          mkdir -p ~/.buildozer/android/platform/
+          
+          # یہ انوائرمنٹ سیٹنگز بلڈوزر کو اینڈرائیڈ کے مستحکم ورژنز پر لاک رکھیں گی
           export P4A_android_api=33
           export P4A_android_ndk=25b
           export P4A_ndk_api=33
+          
+          # یہ خفیہ فلیگ بلڈوزر کو خودکار لائسنس قبول کرنے پر مجبور کرتا ہے (بغیر کسی لٹکنے والی کمانڈ کے)
+          export AUTO_ACCEPT_AND_SDK_LICENSES=yaml
+          
+          # اب بلڈوزر بغیر کسی مینوئل پائپ یا sdkmanager کے رولے کے سیدھا رن ہوگا
           buildozer android debug
 
       - name: Upload APK
