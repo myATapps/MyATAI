@@ -18,7 +18,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip
           pip install --upgrade pip
-          pip install buildozer cython==0.29.36
+          pip install cython==0.29.36
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -26,25 +26,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Auto Accept Licenses & Run Buildozer
-        env:
-          # 🎯 گٹ ہب ایکشنز کا سب سے پکا اور آفیشل طریقہ: بلڈوزر اور اینڈرائیڈ کو رن ٹائم پر ہی لائسنس آٹو پاس کرنے پر مجبور کرنا
-          BUILDOZER_ACCEPT_ANDROID_SDK_LICENSES: '1'
-          ANDROID_CHOOSE_SDKMAN: 'y'
-          ACCEPT_FALCON_LICENSES: 'y'
-        run: |
-          mkdir -p ~/.buildozer/android/platform/
-          
-          # جاوا 17 کا انوائرمنٹ سیٹ کرنا
-          export JAVA_HOME=$JAVA_HOME_17_X64
-          export PATH=$JAVA_HOME/bin:$PATH
-
-          # پائتھن ٹول چین کو بالکل صاف طریقے سے لوڈ کرنا
-          python -m pip install --upgrade python-for-android
-          export PATH=$pythonLocation/bin:$PATH
-          
-          # 🎯 اب بلڈوزر بالکل اکیلا، بغیر کسی 'yes' یا پائپ کے چلے گا، اور لائسنس خود بخود اوپر والے سوئچ سے پاس ہوں گے
-          buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+      # 🎯 جادوئی سٹیپ: یہ آفیشل ایکشن لائسنس اور پائپ کا رولا خود ہی ختم کر دے گا
+      - name: Build APK with Buildozer Action
+        uses: ArtemGovorov/buildozer-action@v1
+        with:
+          workdir: .
+          buildozer_version: stable
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
