@@ -8,10 +8,11 @@ version = 0.1
 requirements = python3, kivy
 orientation = portrait
 
-# اینڈرائیڈ کے مستحکم ورژنز
+# یہاں ہم گٹ ہب کے اپنے بنے بنائے سسٹمز کے راستے دے رہے ہیں
+android.sdk_path = /usr/local/lib/android/sdk
+android.ndk_path = /usr/local/lib/android/sdk/ndk/25.2.9519653
 android.api = 33
 android.minapi = 21
-android.ndk = 25b
 android.ndk_api = 33
 android.archs = arm64-v8a
 
