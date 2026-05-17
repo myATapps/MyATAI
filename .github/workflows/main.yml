@@ -34,19 +34,18 @@ jobs:
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
 
-          # پائتھن ٹول چین کو ریڈی کرنا
+          # آپ کی لاجک کے مطابق پکا اضافہ: بلڈوزر سے پہلے پائتھن ٹول چین کی کمانڈ کو ایکٹیو کرنا
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
-
-          # 🎯 پکا فکس: بلڈوزر چلنے سے پہلے اینڈرائیڈ کے سارے لائسنس خودکار قبول کرنا
-          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-          echo -e "\n24106d7b501f8c99b31f130edcf4d74891793285\nd56f11ed256b468ad58d34168b49277fbe6c94f1\n266017f81e925049a12077f722157e494e0946fc\n84831b9409646a918e30573bab4c9c91346d8abd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
           
-          # اب آپ کا اپنا اصل بلڈوزر کوڈ بغیر کسی 'yes |' کے رولے کے صاف چلے گا
-          buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+          # 🎯 کوڈ میں پکا اضافہ: بلڈوزر چلنے سے پہلے اینڈرائیڈ کے مسنگ بلڈ ٹولز (build-tools) کو خودکار انسٹال کرنا
+          yes | sdkmanager "platform-tools" "build-tools;33.0.2" "platforms;android-33" || true
+          
+          # آپ کا اپنا اصل کوڈ جو نیچے ویسے ہی موجود ہے اور 'yes |' کے ساتھ ہی چلے گا
+          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
 
       - name: Upload APK
-        uses: actions/artifact@v4
+        uses: actions/upload-artifact@v4
         with:
           name: My-App-APK
           path: bin/*.apk
