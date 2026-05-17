@@ -34,15 +34,15 @@ jobs:
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
 
-          # آپ کی لاجک کے مطابق پکا اضافہ: بلڈوزر سے پہلے پائتھن ٹول چین کی کمانڈ کو ایکٹیو کرنا
+          # پائتھن ٹول چین کو ریڈی کرنا
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 کوڈ میں پکا اضافہ: بلڈوزر چلنے سے پہلے اینڈرائیڈ کے مسنگ بلڈ ٹولز (build-tools) کو خودکار انسٹال کرنا
-          yes | sdkmanager "platform-tools" "build-tools;33.0.2" "platforms;android-33" || true
+          # 🎯 اینڈرائیڈ لائسنس کو بیک گراؤنڈ میں آٹو ایکسیپٹ موڈ پر ڈالنا
+          export ANDROID_CHOOSE_SDKMAN=y
           
-          # آپ کا اپنا اصل کوڈ جو نیچے ویسے ہی موجود ہے اور 'yes |' کے ساتھ ہی چلے گا
-          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+          # 🎯 فائنل فکس: 'yes |' کو ہٹا دیا تاکہ بروکن پائپ کا چھوٹا ایرر ختم ہو اور بلڈوزر صاف رن ہو
+          buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
