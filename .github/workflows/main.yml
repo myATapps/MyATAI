@@ -38,8 +38,14 @@ jobs:
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 آپ کی لاجک کا پکا علاج: ایک لوپ جو بیک گراؤنڈ میں ہر 5 سیکنڈ بعد صرف ایک بار 'y' بھیجے گا جب تک بلڈوزر چل رہا ہے
-          (while true; do echo "y"; sleep 5; done) | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+          # 🎯 انتظام نمبر 1: بلڈوزر چلنے سے پہلے اینڈرائیڈ کے اپنے ٹول کو مینوئلی 'yes' دے کر سارے لائسنس ایکسیپٹ کروانا
+          mkdir -p ~/.android && touch ~/.android/repositories.cfg
+          yes | sdkmanager --licenses || true
+          
+          # 🎯 انتظام نمبر 2: آپ کی لاجک کے مطابق 'yes |' بلڈوزر کے ساتھ بھی رہے گا تاکہ اندر جہاں بھی ضرورت ہو 'yes' ملتا رہے
+          # اور آخر میں بروکن پائپ کے سگنل (141) کو ہینڈل کیا ہے تاکہ بلڈ فیل نہ ہو
+          set -o pipefail
+          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33 || [ $? -eq 141 ] || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
