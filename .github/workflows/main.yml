@@ -30,12 +30,11 @@ jobs:
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
-          # اینڈرائیڈ لائسنس کو پہلے ہی زبردستی پاس کرنا
-          yes | sdkmanager --licenses || true
-          
-          # یہ وہی پرانی کمانڈ ہے جو آپ کو 14193 تک لے کر گئی تھی، بس ہم نے انوائرمنٹ کو پکا لاک کر دیا ہے
-          export P4A_android_api=33
-          export P4A_android_ndk=25b
-          export P4A_ndk_api=33
-          
-          yes | buildozer android debug
+          # یہاں ہم نے این ڈی کے (NDK) کی اندرونی اے پی آئی کو بھی زبردستی 33 پر لاک کر دیا ہے تاکہ ٹول چین کریش نہ ہو
+          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: My-App-APK
+          path: bin/*.apk
