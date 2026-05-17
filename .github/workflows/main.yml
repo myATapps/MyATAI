@@ -27,6 +27,8 @@ jobs:
           java-version: '17'
 
       - name: Auto Accept Licenses & Run Buildozer
+        # 🎯 آپ کا حکم: یہ سٹیپ 5 منٹ چل کر خود ہی پائپ لائن کو ختم (Timeout) کر دے گا تاکہ ایرر نہ آئے
+        timeout-minutes: 5
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
@@ -34,17 +36,16 @@ jobs:
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
 
-          # آپ کی لاجک کے مطابق پکا اضافہ: بلڈوزر سے پہلے پائتھن ٹول چین کو ایکٹیو کرنا
+          # پائتھن ٹول چین کو ریڈی کرنا
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 آپ کا حکم: 'yes |' صرف اور صرف یہاں لائسنس قبول کرنے کے لیے آئے گا
-          yes | sdkmanager --licenses || true
-          
-          # بلڈوزر کی اپنی کمانڈ اب بالکل اکیلی اور صاف چلے گی، بغیر کسی پائپ بلاکنگ کے
-          buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+          # 🎯 آپ کی لاجک: 'yes |' کو واپس شروع میں لا کر بلڈوزر کے ساتھ جوڑ دیا
+          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
 
       - name: Upload APK
+        # اگر ٹائم آؤٹ کی وجہ سے وارننگ آئے تب بھی APK اپلوڈ ہو جائے
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: My-App-APK
