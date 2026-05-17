@@ -30,16 +30,17 @@ jobs:
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
-          # یہ انوائرمنٹ سیٹنگز بلڈوزر کو اینڈرائیڈ کے مستحکم ورژنز پر لاک رکھیں گی
+          # گٹ ہب کے اپنے اینڈرائیڈ سسٹمز کے پاتھ کو پکا لاک کرنا تاکہ سکرپٹ لٹکے نہ
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          
+          # اینڈرائیڈ ورژنز کی سیٹنگز
           export P4A_android_api=33
           export P4A_android_ndk=25b
           export P4A_ndk_api=33
           
-          # یہ خفیہ فلیگ بلڈوزر کو خودکار لائسنس قبول کرنے پر مجبور کرتا ہے (بغیر کسی لٹکنے والی کمانڈ کے)
-          export AUTO_ACCEPT_AND_SDK_LICENSES=yaml
-          
-          # اب بلڈوزر بغیر کسی مینوئل پائپ یا sdkmanager کے رولے کے سیدھا رن ہوگا
-          buildozer android debug
+          # اب بلڈوزر کو رن کریں، پاتھ لاک ہونے کی وجہ سے sdkmanager فریز نہیں ہوگا
+          yes | buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
