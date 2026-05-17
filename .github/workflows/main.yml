@@ -16,7 +16,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip
+          sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip expect
           pip install --upgrade pip
           pip install buildozer cython==0.29.36
 
@@ -38,21 +38,18 @@ jobs:
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 وہ پرانا اوکے طریقہ: 'yes |' لائیو چلے گا لیکن لاگ کو فائل میں ڈالنے سے پائپ لائن کبھی نہیں ٹوٹے گی
-          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33 > buildozer_output.log 2>&1 &
-          
-          # بلڈوزر کے بیک گراؤنڈ پروسیس کا انتظار کرنا اور لاگ اسکرین پر دکھانا
-          BUILDOZER_PID=$!
-          echo "Buildozer is running in background with PID: $BUILDOZER_PID"
-          
-          # جب تک بلڈوزر چل رہا ہے، لاگ پرنٹ کرو تاکہ پائپ لائن لائیو رہے
-          while kill -0 $BUILDOZER_PID 2>/dev/null; do
-              tail -n 20 buildozer_output.log
-              sleep 10
-          done
-          
-          # فائنل پورا لاگ اسکرین پر پرنٹ کرنا
-          cat buildozer_output.log
+          # 🎯 ایکسپیکٹ (Expect) اسکرپٹ: یہ صرف ضرورت کے وقت 'y' دبائے گا اور پائپ کو کبھی ٹوٹنے نہیں دے گا
+          expect -c "
+          set timeout -1
+          spawn buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
+          expect {
+              \"*y/n*\" { send \"y\r\"; exp_continue }
+              \"*Accept*\" { send \"y\r\"; exp_continue }
+              eof
+          }
+          catch wait result
+          exit [lindex \$result 3]
+          "
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
