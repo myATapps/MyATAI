@@ -26,7 +26,23 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Pre-Accept Android Licenses & Run Buildozer
+      - name: Install Android SDK & Accept Licenses
+        run: |
+          # 1. اینڈرائیڈ کمانڈ لائن ٹولز ڈاؤن لوڈ کرنا
+          mkdir -p ~/.android && touch ~/.android/repositories.cfg
+          mkdir -p ~/android-cmdline && cd ~/android-cmdline
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
+          unzip -q cmdline.zip && rm cmdline.zip
+          
+          # 2. آفیشل طریقے سے سارے لائسنس ایکسیپٹ کرنا
+          cd cmdline-tools/bin
+          yes | ./sdkmanager --sdk_root=$HOME/android-sdk --licenses
+          
+          # 3. بلڈوزر کو بتانا کہ ایس ڈی کے کا اصل فولڈر کہاں ہے تاکہ وہ دوبارہ ڈاؤن لوڈ نہ کرے
+          mkdir -p ~/.buildozer/android/platform/
+          ln -s $HOME/android-sdk ~/.buildozer/android/platform/android-sdk
+
+      - name: Run Buildozer
         run: |
           # جاوا اور پائتھن پاتھ سیٹ کرنا
           export JAVA_HOME=$JAVA_HOME_17_X64
@@ -34,15 +50,7 @@ jobs:
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
 
-          # 🎯 لائیو 'yes' کا پکا متبادل: بلڈوزر کے چلنے سے پہلے ہی لائسنس فائلز خود بنا کر لاک کرنا
-          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-          echo -e "247a1c1766994db31f4712d03d882c5a2831d130\n28a2d7fc5545274b000e12721c45a6670b961d66\nd56f5187479451eabf01fb74fa6df2d34959c943\n859f317696f67ef3d7f1d8251830f09164401a48\n601085b94cd77f6b540f293d93aebef30ac9723d\nc0b411d53040b138b90500d4840557de0142d4fb\n7e27f001deab261c308a3e0a274885831e8e692a\nf319124de06f4a38af55d4e12316e047ce5ef4a1\nde774a3ece5f2360da430a245d17d83cd15e8e79\ne9ac30d0b01ea141045a11d770e132020e200c44\xb463a998a75e33696a66b9748b04c8133a8dca3b" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          
-          # اینڈرائیڈ کو بتانا کہ سب منظور ہے
-          export BUILDOZER_ACCEPT_ANDROID_SDK_LICENSES=1
-          export ANDROID_CHOOSE_SDKMAN=y
-
-          # 🎯 اب بلڈوزر بالکل اکیلا، بغیر کسی 'yes' پائپ کے چلے گا، اور لائسنس کا سوال ہی نہیں پوچھے گا
+          # 🎯 اب بلڈوزر بنا کسی 'yes' یا پائپ کے بالکل سیدھا اور کلین چلے گا
           buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
 
       - name: Upload APK
