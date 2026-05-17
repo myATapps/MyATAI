@@ -37,15 +37,9 @@ jobs:
           # پائتھن ٹول چین کو ریڈی کرنا
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
-          
-          # 🎯 انتظام نمبر 1: بلڈوزر چلنے سے پہلے اینڈرائیڈ کے اپنے ٹول کو مینوئلی 'yes' دے کر سارے لائسنس ایکسیپٹ کروانا
-          mkdir -p ~/.android && touch ~/.android/repositories.cfg
-          yes | sdkmanager --licenses || true
-          
-          # 🎯 انتظام نمبر 2: آپ کی لاجک کے مطابق 'yes |' بلڈوزر کے ساتھ بھی رہے گا تاکہ اندر جہاں بھی ضرورت ہو 'yes' ملتا رہے
-          # اور آخر میں بروکن پائپ کے سگنل (141) کو ہینڈل کیا ہے تاکہ بلڈ فیل نہ ہو
-          set -o pipefail
-          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33 || [ $? -eq 141 ] || true
+
+          # 🎯 فائنل فکس: بغیر کسی 'yes' پائپ کے بلڈوزر کے اپنے آفیشل فلیگ کے ساتھ رن کرنا تاکہ سچی مچی APK بنے
+          buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33 --accept-sdk-license
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
