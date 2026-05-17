@@ -26,17 +26,15 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==0.29.36
 
-      - name: Auto Accept Licenses & Run Buildozer
+      - - name: Auto Accept Licenses & Run Buildozer
         run: |
           mkdir -p ~/.buildozer/android/platform/
           
-          # 🎯 کوڈ میں پکا اضافہ: جاوا کا راستہ بلڈوزر کمانڈ سے پہلے سیٹ کرنا تاکہ ٹول چین کو کمانڈ مل سکے
-          export JAVA_HOME=$JAVA_HOME_17_X64
-          export PATH=$JAVA_HOME/bin:$PATH
-          
-          # یہ آپ کا اپنا اصل اور بالکل ٹھیک کوڈ ہے، اس میں کوئی تبدیلی نہیں کی
-          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33 --bba=sdl2
+          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
 
+          # 🎯 Code ke bilkul end mein paka izafa taaki python-for-android ko Java 17 ki command mil sake
+          echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
+          echo "PATH=$JAVA_HOME_17_X64/bin:$PATH" >> $GITHUB_ENV
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
