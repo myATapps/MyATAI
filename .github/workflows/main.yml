@@ -32,7 +32,9 @@ jobs:
           
           yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
 
-          # 🎯 Code ke bilkul end mein paka izafa taaki python-for-android ko Java 17 ki command mil sake
+      # 🎯 کوڈ کے بالکل اینڈ میں یہ نیا سٹیپ ایڈ کیا ہے تاکہ بلڈوزر کو جاوا 17 کی کمانڈ مل سکے
+      - name: Force Java 17 for Toolchain
+        run: |
           echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
           echo "PATH=$JAVA_HOME_17_X64/bin:$PATH" >> $GITHUB_ENV
       - name: Upload APK
