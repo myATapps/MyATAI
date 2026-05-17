@@ -8,16 +8,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # یہ کِوی کا آفیشل بلڈوزر ایکشن ہے جو جاوا، اینڈرائیڈ، اور لائسنس کے تمام ایررز خود ہی فکس کر دیتا ہے
-      - name: Build with Buildozer Action
-        uses: ArtemSsh/buildozer-action@v1
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          buildozer_version: stable
-          command: buildozer android debug
-          repository_root: .
+          python-version: '3.10'
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
-          name: My-App-APK
-          path: bin/*.apk
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.36
+
+      - name: Auto Accept Licenses & Run Buildozer
+        run: |
+          mkdir -p ~/.buildozer/android/platform/
+          
+          # اینڈرائیڈ لائسنس کو پہلے ہی زبردستی پاس کرنا
+          yes | sdkmanager --licenses || true
+          
+          # یہ وہی پرانی کمانڈ ہے جو آپ کو 14193 تک لے کر گئی تھی، بس ہم نے انوائرمنٹ کو پکا لاک کر دیا ہے
+          export P4A_android_api=33
+          export P4A_android_ndk=25b
+          export P4A_ndk_api=33
+          
+          yes | buildozer android debug
