@@ -37,6 +37,16 @@ jobs:
         run: |
           echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
           echo "PATH=$JAVA_HOME_17_X64/bin:$PATH" >> $GITHUB_ENV
+          - name: Auto Accept Licenses & Run Buildozer
+        run: |
+          mkdir -p ~/.buildozer/android/platform/
+          
+          # 🎯 کوڈ میں پکا اضافہ: بلڈوزر چلنے سے پہلے جاوا 17 کی کمانڈ کو اوپر سیٹ کر دیا
+          export JAVA_HOME=$JAVA_HOME_17_X64
+          export PATH=$JAVA_HOME/bin:$PATH
+
+          # یہ آپ کا اپنا اصل اور بالکل ٹھیک کوڈ ہے جو نیچے ویسے ہی موجود ہے
+          yes | buildozer android debug --androidapi=33 --androidndk=25b --ndk-api=33
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
