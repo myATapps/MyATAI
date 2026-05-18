@@ -1,6 +1,12 @@
 name: Build Android APK
 on: [push, workflow_dispatch]
 
+# 🎯 آپ کا آئیڈیا: پائتھن اور جاوا کی طرح اینڈرائیڈ 37 کے پاتھس کو بالکل شروع میں ہی گلوبل لاک کرنا
+env:
+  ANDROID_HOME: '/home/runner/android-sdk'
+  ANDROIDSDK: '/home/runner/android-sdk'
+  PATH: '/home/runner/android-sdk/cmdline-tools/latest/bin:/home/runner/android-sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,13 +32,21 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 جادوئی سٹیپ: یہ گوگل کا آفیشل ایکشن ہے جو سرور پر موجود اینڈرائیڈ کے تمام لائسنسز (بشمول 37) کو پہلے ہی ایکسیپٹ کر دیتا ہے
-      - name: Pre-Accept All Android Licenses Legally
-        uses: android-actions/setup-android@v3
-        with:
-          log-accepted-licenses: false
+      # 🎯 یہاں ہم نے شروع میں سیٹ کیے گئے پاتھس پر مینوئلی ورژن 37 ڈاؤن لوڈ کر کے لائسنس اوکے کر دیے
+      - name: Pre-Install Android SDK 37 & Accept Licenses
+        run: |
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          cd $ANDROID_HOME/cmdline-tools
+          
+          # گوگل کے سرور سے ٹولز لانا
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip -q commandlinetools-linux-9477386_latest.zip
+          mv cmdline-tools latest
+          
+          # لائسنس آٹو ایکسیپٹ کرنا
+          echo "y" | sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "build-tools;37.0.0" "platforms;android-34"
+          echo "اینڈرائیڈ ٹولز ورژن 37 پاتھ میں لاک ہو گئے!"
 
-      # 🎯 بلڈوزر بالکل فری ہو کر چلے گا، اسے اینڈرائیڈ مینیجر بھی ملے گا اور لائسنس بھی اوکے ملیں گے
       - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
@@ -40,12 +54,18 @@ jobs:
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # کوئی ایکسٹرا پاتھ اوور رائیڈ نہیں کرنا، بلڈوزر کو خود اپنا صاف فولڈر بنانے دیں
-          buildozer android debug
+          # بلڈوزر اب مجبور ہے کیونکہ مین پاتھ اوپر گلوبل سیٹ ہو چکا ہے
+          buildozer android debug \
+            --androidapi=34 \
+            --androidndk=25b \
+            --ndk-api=34 \
+            --build-tools-version=37.0.0
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AT-AI-APK
-          path: bin/*.apk
+          path: |
+            bin/*.apk
+            .buildozer/android/platform/build-*/*/bin/*.apk
           if-no-files-found: error
