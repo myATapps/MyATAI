@@ -26,27 +26,31 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 آپ کا آئیڈیا: بلڈوزر چلنے سے پہلے اینڈرائیڈ ٹولز کو آٹو رن اور لائسنس لاک کرنا
-      - name: Auto-Accept Android SDK Licenses Dynamically
+      # 👑 آپ کا ماسٹر پلان: پورے اینڈرائیڈ ایس ڈی کے کے تمام لائسنسز کو آٹو ایکسیپٹ کرنا
+      - name: Force Automatically Accept All SDK Licenses
         run: |
-          # سرور پر موجود اینڈرائیڈ ٹولز کا آفیشل پاتھ ڈھونڈنا
-          export ANDROID_REGULAR_SDK="/usr/local/lib/android/sdk"
+          # گٹ ہب کے رنر پر اینڈرائیڈ ٹولز کا اصل راستہ سیٹ کرنا
+          export ANDROID_ROOT="/usr/local/lib/android/sdk"
           
-          if [ -d "$ANDROID_REGULAR_SDK/cmdline-tools/latest/bin" ]; then
-            export PATH=$ANDROID_REGULAR_SDK/cmdline-tools/latest/bin:$PATH
-          elif [ -d "$ANDROID_REGULAR_SDK/tools/bin" ]; then
-            export PATH=$ANDROID_REGULAR_SDK/tools/bin:$PATH
+          # پاتھ کو عارضی طور پر ایکٹو کرنا تاکہ ہم مینیجر چلا سکیں
+          if [ -d "$ANDROID_ROOT/cmdline-tools/latest/bin" ]; then
+            export PATH=$ANDROID_ROOT/cmdline-tools/latest/bin:$PATH
+          elif [ -d "$ANDROID_ROOT/tools/bin" ]; then
+            export PATH=$ANDROID_ROOT/tools/bin:$PATH
           fi
           
-          # 👑 آٹو کمانڈ: یہ سرور پر موجود اینڈرائیڈ مینیجر کے ذریعے تمام لائسنس پہلے ہی اوکے کر دے گا
-          if command -v sdkmanager &> /dev/null; then
-            yes | sdkmanager --licenses || true
-            echo "تمام اینڈرائیڈ ورژنز کے لائسنس آٹو کمانڈ پر سیٹ ہو گئے!"
-          else
-            echo "مین سرور کا ایس ڈی کے مینیجر ابھی ریڈی نہیں ہے، بلڈوزر اسے خود ہینڈل کرے گا۔"
+          # 🎯 وہ جادوئی آٹو کمانڈ جو سارے کے سارے لائسنس ایک سیکنڈ میں منظور کر دے گی
+          echo "اینڈرائیڈ کے تمام لائسنسز کو آٹو موڈ پر ڈالا جا رہا ہے..."
+          yes | sdkmanager --licenses --sdk_root=$ANDROID_ROOT || true
+          
+          # بلڈوزر کے اپنے متوقع فولڈر کے لیے بھی ایک بیک اپ لائسنس کاپی بنانا
+          mkdir -p ~/.buildozer/android/platform/android-sdk/
+          if [ -d "$ANDROID_ROOT/licenses" ]; then
+            cp -r $ANDROID_ROOT/licenses ~/.buildozer/android/platform/android-sdk/
+            echo "تمام لائسنسز بلڈوزر کے خفیہ فولڈر میں بھی آٹو لاک ہو گئے!"
           fi
 
-      # 🚀 اب بلڈوزر چلے گا، کوئی کسٹم پاتھ اس کے راستے خراب نہیں کرے گا
+      # 🚀 اب بلڈوزر رن کریں، کوئی 'yes |' یہاں نہیں لگے گا تاکہ پائپ لائن نہ ٹوٹے
       - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
@@ -54,7 +58,7 @@ jobs:
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # ایک انوائرمنٹ کمانڈ جو بلڈوزر کے اندرونی لائسنس سسٹم کو بھی آٹو منظور کر دیتی ہے
+          # بلڈوزر کے کوڈ کو مجبور کرنے کے لیے گلوبل انوائرمنٹ کمانڈ
           export ANDROID_FORCE_ACCEPT_LICENSES=1
           
           buildozer android debug
