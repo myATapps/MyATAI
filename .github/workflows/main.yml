@@ -26,26 +26,40 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 👑 سب سے بڑا ماسٹر ہیک: سرور کے بنے بنائے اینڈرائیڈ لائسنسز کو آٹو سائن کرنا
-      - name: Accept All Android SDK Licenses
+      # 👑 سب سے پاورفل سٹیپ: ورژن 37 کو پہلے ہی مینوئلی ڈاؤن لوڈ اور لائسنس اوکے کرنا
+      - name: Pre-Install Android Build-Tools 37 and Accept Licenses
         run: |
-          # سرور کے آفیشل ٹولز کا پاتھ ایکٹو کرنا
+          # 1. بلڈوزر کا متوقع فولڈر پہلے ہی مینوئلی تیار کرنا
+          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
+          
+          # 2. سرور کے آفیشل مینیجر کا راستہ ایکٹو کرنا
           export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools/bin:$PATH
-          # تمام لائسنسز کو آٹو 'yes' کرنا
+          
+          # 3. تمام لائسنسز کو آٹو 'yes' کرنا
           echo "y" | sdkmanager --licenses || true
-          echo "سرور کے اپنے اینڈرائیڈ لائسنسز کامیابی سے لاک ہو گئے!"
+          
+          # 4. 🎯 زبردستی ورژن 37 کو پہلے ہی ڈاؤن لوڈ کرنا تاکہ بعد میں انٹرنیٹ کا رولا نہ رہے
+          echo "y" | sdkmanager "build-tools;37.0.0" "platform-tools" "platforms;android-35" || true
+          
+          # 5. ڈاؤن لوڈ شدہ بالکل ریڈی فائلز اور لائسنس بلڈوزر کے فولڈر میں کاپی کرنا
+          if [ -d "/usr/local/lib/android/sdk/build-tools/37.0.0" ]; then
+            mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
+            cp -r /usr/local/lib/android/sdk/build-tools/37.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/
+          fi
+          
+          # لائسنس فولڈر بھی بیک اپ کاپی کرنا
+          cp -r /usr/local/lib/android/sdk/licenses/* ~/.buildozer/android/platform/android-sdk/licenses/ || true
+          
+          echo "ورژن 37 ڈاؤن لوڈ ہو گیا اور بلڈوزر کے لیے لاک ہو گیا!"
 
-      # 🚀 بلڈوزر اب گٹ ہب کا اپنا آفیشل فولڈر استعمال کرے گا، کوئی فائل مس نہیں ہوگی
-      - name: Run Buildozer Forcing GitHub SDK Path
+      # 🚀 اب بلڈوزر رن کریں، اسے سب کچھ پکا پکایا ملے گا
+      - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 بلڈوزر کو مجبور کرنا کہ وہ سرور کا فیکٹری پاتھ اٹھائے
-          export ANDROIDSDK=$ANDROID_HOME
-          export ANDROIDNDK=$ANDROID_HOME/ndk/27.3.13750724
           export ANDROID_FORCE_ACCEPT_LICENSES=1
           
           # تفصیلی لاگ کے ساتھ رن
