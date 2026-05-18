@@ -26,33 +26,29 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 👑 پاتھ اور لائسنس بالکل فکسڈ اور لاکڈ
-      - name: Pre-create Buildozer SDK Layout and Fix SDK Manager Path
+      # 👑 سب سے بڑا ماسٹر ہیک: سرور کے بنے بنائے اینڈرائیڈ لائسنسز کو آٹو سائن کرنا
+      - name: Accept All Android SDK Licenses
         run: |
-          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
-          mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
-          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-          
-          if [ -d "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" ]; then
-            cp -r /usr/local/lib/android/sdk/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/
-          fi
-          
-          ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
-          
-          echo -e "24333f8a63b6825ea50157f88340d3265b9099d6\n8cce3afb685bc2fac41c43633d1a37114b35261f\nde5b3312b299b25654117e0a7991475c293a61cd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo -e "84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          # سرور کے آفیشل ٹولز کا پاتھ ایکٹو کرنا
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools/bin:$PATH
+          # تمام لائسنسز کو آٹو 'yes' کرنا
+          echo "y" | sdkmanager --licenses || true
+          echo "سرور کے اپنے اینڈرائیڈ لائسنسز کامیابی سے لاک ہو گئے!"
 
-      # 🚀 اب ہم فل ڈی بگ کمانڈ رن کریں گے تاکہ اصل بیماری سامنے آئے
-      - name: Run Buildozer with Full Debug Logging
+      # 🚀 بلڈوزر اب گٹ ہب کا اپنا آفیشل فولڈر استعمال کرے گا، کوئی فائل مس نہیں ہوگی
+      - name: Run Buildozer Forcing GitHub SDK Path
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
+          # 🎯 بلڈوزر کو مجبور کرنا کہ وہ سرور کا فیکٹری پاتھ اٹھائے
+          export ANDROIDSDK=$ANDROID_HOME
+          export ANDROIDNDK=$ANDROID_HOME/ndk/27.3.13750724
           export ANDROID_FORCE_ACCEPT_LICENSES=1
           
-          # '-v' لگانے سے پورا تفصیلی لاگ پرنٹ ہوگا
+          # تفصیلی لاگ کے ساتھ رن
           buildozer -v android debug
 
       - name: Upload APK
