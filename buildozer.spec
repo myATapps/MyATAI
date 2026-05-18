@@ -3,17 +3,18 @@ title = MyATAI
 package.name = myatai
 package.domain = org.atpro
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas
+source.include_ext = py,png,jpg
 version = 0.1
 requirements = python3, kivy
 orientation = portrait
 
-# اینڈرائیڈ کے مستحکم ورژنز جن پر بلڈوزر بغیر لٹکے کام کرے گا
 android.api = 33
 android.minapi = 21
 android.ndk = 25b
 android.ndk_api = 33
 android.archs = arm64-v8a
+# 🎯 یہ لائن دوبارہ یاد سے لکھ دیں تاکہ بلڈوزر مجبور ہو جائے
+android.build_tools_version = 33.0.0
 
 [buildozer]
 log_level = 2
