@@ -26,18 +26,22 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      # گوگل کا آفیشل ایکشن جو لائسنس کو پہلے ہی اوکے کر دے گا
+      - name: Set up Android SDK & Accept Licenses
+        uses: android-actions/setup-android@v3
+        with:
+          log-accepted-licenses: false
+
       - name: Run Buildozer Smoothly
         run: |
-          mkdir -p ~/.buildozer/android/platform/
-          
-          # جاوا 17 اور پائتھن ٹول چین سیٹ کرنا
+          # انوائرمنٹ سیٹ کرنا
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 فائنل توڑ: بغیر 'yes' اور بغیر پائپ (|) کے، یہ ویری ایبل خود ہی لائسنس ایکسیپٹ کر لے گا
-          APP_ANDROID_ACCEPT_SDK_LICENSE=1 buildozer android debug
+          # اب بلڈوزر مجبور ہو کر 33.0.0 ہی چلائے گا
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
