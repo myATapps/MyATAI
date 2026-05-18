@@ -18,7 +18,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip
           pip install --upgrade pip
-          # 👑 یہاں پکا تالا: بلڈوزر کا ماسٹر ورژن انسٹال کرنا جو گٹ ہب ایکشنز کے لیے اپڈیٹڈ ہے
+          # بلڈوزر کا بالکل نیا ماسٹر ورژن جو گٹ ہب کے پاتھس کو بہتر سمجھتا ہے
           pip install git+https://github.com/kivy/buildozer.git@master
           pip install cython==0.29.36
 
@@ -28,15 +28,38 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🚀 بلڈوزر اب بنا کسی مینوئل پاتھ کے بالکل آفیشل طریقے سے چلے گا
-      - name: Run Buildozer Smoothly
+      # 👑 ۱۔ شروع میں آٹو کمانڈ: سرور کے اپنے ایس ڈی کے لائسنسز کو آٹو لاک کرنا
+      - name: Start Auto Command (Pre-Accept Licenses)
+        run: |
+          export ANDROID_ROOT="/usr/local/lib/android/sdk"
+          if [ -d "$ANDROID_ROOT/cmdline-tools/latest/bin" ]; then
+            export PATH=$ANDROID_ROOT/cmdline-tools/latest/bin:$PATH
+          elif [ -d "$ANDROID_ROOT/tools/bin" ]; then
+            export PATH=$ANDROID_ROOT/tools/bin:$PATH
+          fi
+          echo "y" | sdkmanager --licenses --sdk_root=$ANDROID_ROOT || true
+          
+          # بلڈوزر کے لیے بھی فولڈر پہلے سے بنا کر لائسنس ہیشز کی آٹو کمانڈ دینا
+          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
+          echo -e "24333f8a63b6825ea50157f88340d3265b9099d6\n8cce3afb685bc2fac41c43633d1a37114b35261f\nde5b3312b299b25654117e0a7991475c293a61cd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo -e "84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          echo "شروع کی آٹو کمانڈز مکمل ہو گئیں!"
+
+      # 🚀 ۲۔ بعد میں لمیٹڈ ٹائم 'yes' کمانڈ: بلڈوزر کو رن کرنا
+      - name: Run Buildozer with Limited Time Yes
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
           
-          # یہ کمانڈ نئے بلڈوزر کو بتائے گی کہ لائسنس آٹو اوکے کرنے ہیں
           export ANDROID_FORCE_ACCEPT_LICENSES=1
           
+          echo "بلڈوزر شروع ہو رہا ہے، لائسنسز کے لیے لمیٹڈ 'yes' ایکٹو ہے..."
+          
+          # 🎯 جادوئی لاجک: 'yes' کو صرف 60 سیکنڈ کے لیے چلانا تاکہ بلڈوزر کے لائسنس پاس ہو جائیں اور پائپ نہ ٹوٹے
+          timeout 60s yes | buildozer android debug || true
+          
+          echo "لمیٹڈ ٹائم اوکے ہو گیا، اب فائنل بلڈ پروسیس چل رہا ہے..."
+          # اب بلڈوزر کو بغیر کسی پائپ کے کھلا چھوڑ دیا تاکہ وہ سکون سے APK فائنل کرے
           buildozer android debug
 
       - name: Upload APK
