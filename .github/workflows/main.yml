@@ -26,33 +26,27 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # گوگل کا آفیشل ٹول جو اینڈرائیڈ 33 کی سیٹنگز لوڈ کرے گا
-      - name: Set up Android SDK & Pre-Load 33
+      # 🎯 گوگل کا آفیشل مینیجر: یہ ورژن 33 کے سارے لائسنس خود ہی ایکسیپٹ کر لے گا
+      - name: Set up Android SDK & Accept Licenses
         uses: android-actions/setup-android@v3
         with:
           api-level: 33
           build-tools: 33.0.0
           log-accepted-licenses: false
 
-      # 🎯 سب سے پکا توڑ: بنا کسی پائپ (|) کے، یہ اینڈرائیڈ کا اپنا آفیشل کمانڈ ٹول ہے جو تمام لائسنس فائلز کو پہلے ہی سائن کر دے گا
-      - name: Official Android License Acceptor (No Pipes)
-        run: |
-          sdkmanager --licenses
-
-      # 🎯 بلڈوزر کلین رن (بغیر کسی 'yes' اور بغیر کسی بروکن پائپ کے)
-      - name: Run Buildozer Locked on 33
+      # 🎯 بالکل صاف اور سیدھا بلڈ: بغیر کسی 'yes' اور بغیر کسی بروکن پائپ کے
+      - name: Run Buildozer Clean
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # بلڈوزر کو زبردستی سسٹم کے اینڈرائیڈ 33 والے پاتھ پر سیٹ کرنا
+          # بلڈوزر کو بتانا کہ گوگل کا ریڈی میڈ SDK استعمال کرے
           export ANDROIDSDK=$ANDROID_HOME
           export ANDROIDAPI=33
           
-          # اب یہ بالکل سیدھی کمانڈ چلے گی، کوئی پائپ نہیں ٹوٹے گا
-          buildozer android debug --androidapi=33 --build-tools-version=33.0.0
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
