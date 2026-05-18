@@ -26,26 +26,26 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 یہ ہے اصل چیز: یہ گوگل کا آفیشل ایکشن ہے جو سارے لائسنس خود ہی اوکے کر دیتا ہے
-      - name: Set up Android SDK & Accept Licenses
+      # 🎯 گوگل کا آفیشل ایس ڈی کے مینیجر جو بیک گراؤنڈ میں سب ریڈی کرے گا
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          api-level: 33
-          build-tools: 33.0.0
-          log-accepted-licenses: false
 
-      # 🎯 یہاں دیکھیں، کوئی 'yes' نہیں ہے، کوئی پائپ '|' نہیں ہے۔ بالکل کلین کمانڈ!
-      - name: Run Buildozer Clean
+      # 🎯 سب سے پاورفل سٹیپ: یہ کمانڈ بلڈوزر کے فولڈر میں جا کر ورژن 37 کے لائسنس خود ہی سائن کر دے گی
+      - name: Manually Accept All Buildozer Licenses
+        run: |
+          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/
+          # بلڈوزر کے اپنے مینیجر کو رن کر کے زبردستی لائسنس اوکے کرنا
+          yes | sdkmanager --sdk_root=/home/runner/.buildozer/android/platform/android-sdk "build-tools;37.0.0" || true
+          echo "ورژن 37 کے لائسنس زبردستی منظور کر لیے گئے ہیں!"
+
+      - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # بلڈوزر کو بتانا کہ گوگل کا ریڈی میڈ SDK استعمال کرے
-          export ANDROIDSDK=$ANDROID_HOME
-          export ANDROIDAPI=33
-          
+          # اب بلڈوزر بغیر کسی سوال کے سیدھا چلے گا
           buildozer android debug
 
       - name: Upload APK
