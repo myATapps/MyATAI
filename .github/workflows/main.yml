@@ -1,12 +1,6 @@
 name: Build Android APK
 on: [push, workflow_dispatch]
 
-# 🎯 آپ کا آئیڈیا: پائتھن اور جاوا کی طرح اینڈرائیڈ 37 کے پاتھس کو بالکل شروع میں ہی گلوبل لاک کرنا
-env:
-  ANDROID_HOME: '/home/runner/android-sdk'
-  ANDROIDSDK: '/home/runner/android-sdk'
-  PATH: '/home/runner/android-sdk/cmdline-tools/latest/bin:/home/runner/android-sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,21 +26,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 یہاں ہم نے شروع میں سیٹ کیے گئے پاتھس پر مینوئلی ورژن 37 ڈاؤن لوڈ کر کے لائسنس اوکے کر دیے
-      - name: Pre-Install Android SDK 37 & Accept Licenses
+      # 🎯 سب سے بڑا جادوئی سٹیپ: بلڈوزر کے اپنے خفیہ فولڈر میں ورژن 37 کے لائسنس مینوئلی رائٹ (Write) کرنا
+      - name: Inject Android Licenses directly into Buildozer
         run: |
-          mkdir -p $ANDROID_HOME/cmdline-tools
-          cd $ANDROID_HOME/cmdline-tools
+          # بلڈوزر کا مخصوص لائسنس فولڈر مینوئلی بنانا
+          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
           
-          # گوگل کے سرور سے ٹولز لانا
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-          unzip -q commandlinetools-linux-9477386_latest.zip
-          mv cmdline-tools latest
+          # اینڈرائیڈ کے آفیشل ڈیجیٹل لائسنس ہیشز (Hashes) کو فائل میں سیو کرنا
+          # یہ وہی کوڈز ہیں جو 'yes' دبانے پر جنریٹ ہوتے ہیں، ہم انہیں پہلے ہی فائل میں لکھ رہے ہیں
+          echo -e "24333f8a63b6825ea50157f88340d3265b9099d6\n8cce3afb685bc2fac41c43633d1a37114b35261f\nde5b3312b299b25654117e0a7991475c293a61cd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo -e "84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
           
-          # لائسنس آٹو ایکسیپٹ کرنا
-          echo "y" | sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "build-tools;37.0.0" "platforms;android-34"
-          echo "اینڈرائیڈ ٹولز ورژن 37 پاتھ میں لاک ہو گئے!"
+          echo "بلڈوزر کے خفیہ فولڈر میں لائسنس کامیابی سے انجیکٹ کر دیے گئے ہیں!"
 
+      # 🚀 اب بلڈوزر رن کریں، کوئی 'yes' نہیں، کوئی پائپ نہیں، کوئی جھنجھٹ نہیں!
       - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
@@ -54,12 +47,7 @@ jobs:
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # بلڈوزر اب مجبور ہے کیونکہ مین پاتھ اوپر گلوبل سیٹ ہو چکا ہے
-          buildozer android debug \
-            --androidapi=34 \
-            --androidndk=25b \
-            --ndk-api=34 \
-            --build-tools-version=37.0.0
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
