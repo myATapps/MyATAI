@@ -14,7 +14,7 @@ android.ndk = 25b
 android.ndk_api = 33
 android.archs = arm64-v8a
 # 🎯 یہ لائن دوبارہ یاد سے لکھ دیں تاکہ بلڈوزر مجبور ہو جائے
-android.build_tools_version = 33.0.0
+android.build_tools_version = 37.0.0
 
 [buildozer]
 log_level = 2
