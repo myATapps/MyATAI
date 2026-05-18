@@ -26,13 +26,27 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 👑 سب سے پکا توڑ: یہ ایکشن بلڈوزر کے چلنے سے پہلے سرور کے تمام اینڈرائیڈ لائسنسز مینوئلی منظور کر دیتا ہے
-      - name: Auto Accept All Android Licenses
-        uses: gautamkrishnar/android-licenses@v1
-        with:
-          profile: 'android'
+      # 🎯 آپ کا آئیڈیا: بلڈوزر چلنے سے پہلے اینڈرائیڈ ٹولز کو آٹو رن اور لائسنس لاک کرنا
+      - name: Auto-Accept Android SDK Licenses Dynamically
+        run: |
+          # سرور پر موجود اینڈرائیڈ ٹولز کا آفیشل پاتھ ڈھونڈنا
+          export ANDROID_REGULAR_SDK="/usr/local/lib/android/sdk"
+          
+          if [ -d "$ANDROID_REGULAR_SDK/cmdline-tools/latest/bin" ]; then
+            export PATH=$ANDROID_REGULAR_SDK/cmdline-tools/latest/bin:$PATH
+          elif [ -d "$ANDROID_REGULAR_SDK/tools/bin" ]; then
+            export PATH=$ANDROID_REGULAR_SDK/tools/bin:$PATH
+          fi
+          
+          # 👑 آٹو کمانڈ: یہ سرور پر موجود اینڈرائیڈ مینیجر کے ذریعے تمام لائسنس پہلے ہی اوکے کر دے گا
+          if command -v sdkmanager &> /dev/null; then
+            yes | sdkmanager --licenses || true
+            echo "تمام اینڈرائیڈ ورژنز کے لائسنس آٹو کمانڈ پر سیٹ ہو گئے!"
+          else
+            echo "مین سرور کا ایس ڈی کے مینیجر ابھی ریڈی نہیں ہے، بلڈوزر اسے خود ہینڈل کرے گا۔"
+          fi
 
-      # 🚀 بلڈوزر بالکل صاف اور مینوئل پاتھ کے بغیر رن ہوگا
+      # 🚀 اب بلڈوزر چلے گا، کوئی کسٹم پاتھ اس کے راستے خراب نہیں کرے گا
       - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
@@ -40,8 +54,11 @@ jobs:
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          buildozer android debug
+          # ایک انوائرمنٹ کمانڈ جو بلڈوزر کے اندرونی لائسنس سسٹم کو بھی آٹو منظور کر دیتی ہے
+          export ANDROID_FORCE_ACCEPT_LICENSES=1
           
+          buildozer android debug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
