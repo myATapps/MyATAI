@@ -8,66 +8,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # 👑 یہ ہے وہ جادوئی ایکشن! اس کے اندر پائتھن، جاوا، اینڈرائیڈ 37 اور تمام لائسنس پہلے سے لاکڈ ہیں
+      - name: Build APK with Pre-Configured Buildozer Action
+        uses: ArtemGovorov/buildozer-action@v1
+        id: buildozer
         with:
-          python-version: '3.10'
+          workdir: .
+          buildozer_version: master
 
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip
-          pip install --upgrade pip
-          pip install buildozer cython==0.29.36
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      # 👑 آپ کا ماسٹر پلان: پورے اینڈرائیڈ ایس ڈی کے کے تمام لائسنسز کو آٹو ایکسیپٹ کرنا
-      - name: Force Automatically Accept All SDK Licenses
-        run: |
-          # گٹ ہب کے رنر پر اینڈرائیڈ ٹولز کا اصل راستہ سیٹ کرنا
-          export ANDROID_ROOT="/usr/local/lib/android/sdk"
-          
-          # پاتھ کو عارضی طور پر ایکٹو کرنا تاکہ ہم مینیجر چلا سکیں
-          if [ -d "$ANDROID_ROOT/cmdline-tools/latest/bin" ]; then
-            export PATH=$ANDROID_ROOT/cmdline-tools/latest/bin:$PATH
-          elif [ -d "$ANDROID_ROOT/tools/bin" ]; then
-            export PATH=$ANDROID_ROOT/tools/bin:$PATH
-          fi
-          
-          # 🎯 وہ جادوئی آٹو کمانڈ جو سارے کے سارے لائسنس ایک سیکنڈ میں منظور کر دے گی
-          echo "اینڈرائیڈ کے تمام لائسنسز کو آٹو موڈ پر ڈالا جا رہا ہے..."
-          yes | sdkmanager --licenses --sdk_root=$ANDROID_ROOT || true
-          
-          # بلڈوزر کے اپنے متوقع فولڈر کے لیے بھی ایک بیک اپ لائسنس کاپی بنانا
-          mkdir -p ~/.buildozer/android/platform/android-sdk/
-          if [ -d "$ANDROID_ROOT/licenses" ]; then
-            cp -r $ANDROID_ROOT/licenses ~/.buildozer/android/platform/android-sdk/
-            echo "تمام لائسنسز بلڈوزر کے خفیہ فولڈر میں بھی آٹو لاک ہو گئے!"
-          fi
-
-      # 🚀 اب بلڈوزر رن کریں، کوئی 'yes |' یہاں نہیں لگے گا تاکہ پائپ لائن نہ ٹوٹے
-      - name: Run Buildozer Smoothly
-        run: |
-          export JAVA_HOME=$JAVA_HOME_17_X64
-          export PATH=$JAVA_HOME/bin:$PATH
-          python -m pip install --upgrade python-for-android
-          export PATH=$pythonLocation/bin:$PATH
-          
-          # بلڈوزر کے کوڈ کو مجبور کرنے کے لیے گلوبل انوائرمنٹ کمانڈ
-          export ANDROID_FORCE_ACCEPT_LICENSES=1
-          
-          buildozer android debug
-
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AT-AI-APK
-          path: |
-            bin/*.apk
-            .buildozer/android/platform/build-*/*/bin/*.apk
+          path: bin/*.apk
           if-no-files-found: error
