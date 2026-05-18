@@ -26,19 +26,13 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 سٹیپ 1: گوگل کا آفیشل ٹول جو اینڈرائیڈ کا مین سیٹ اپ لوڈ کرے گا
-      - name: Set up Android SDK
+      # 🎯 جادوئی سٹیپ: یہ گوگل کا آفیشل ایکشن ہے جو سرور پر موجود اینڈرائیڈ کے تمام لائسنسز (بشمول 37) کو پہلے ہی ایکسیپٹ کر دیتا ہے
+      - name: Pre-Accept All Android Licenses Legally
         uses: android-actions/setup-android@v3
+        with:
+          log-accepted-licenses: false
 
-      # 🎯 سٹیپ 2: سب سے ضروری توڑ! یہ کمانڈ بلڈوزر کے اپنے خفیہ فولڈر میں جا کر ورژن 37 کے لائسنس پہلے ہی منظور (Accept) کر دے گی
-      - name: Force Accept Buildozer Licenses for Version 37
-        run: |
-          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/
-          # بلڈوزر کے اپنے مینیجر روٹ پر جا کر لائسنس اوکے کرنا
-          yes | sdkmanager --sdk_root=/home/runner/.buildozer/android/platform/android-sdk "build-tools;37.0.0" "platforms;android-34" || true
-          echo "ورژن 37 کے لائسنس زبردستی منظور کر لیے گئے ہیں!"
-
-      # 🎯 سٹیپ 3: اب بلڈوزر رن کریں، کوئی 'yes |' نہیں لگے گا تاکہ پائپ لائن نہ ٹوٹے
+      # 🎯 بلڈوزر بالکل فری ہو کر چلے گا، اسے اینڈرائیڈ مینیجر بھی ملے گا اور لائسنس بھی اوکے ملیں گے
       - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
@@ -46,13 +40,12 @@ jobs:
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
+          # کوئی ایکسٹرا پاتھ اوور رائیڈ نہیں کرنا، بلڈوزر کو خود اپنا صاف فولڈر بنانے دیں
           buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AT-AI-APK
-          path: |
-            bin/*.apk
-            .buildozer/android/platform/build-*/*/bin/*.apk
+          path: bin/*.apk
           if-no-files-found: error
