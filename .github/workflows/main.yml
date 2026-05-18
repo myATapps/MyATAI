@@ -26,33 +26,33 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 جادوئی سٹیپ: یہ کمانڈز آپ کی buildozer.spec فائل میں جا کر تینوں سیٹنگز خود ہی فکس کر دیں گی
+      # 🎯 سب سے اہم سٹیپ: یہ گوگل کے سارے ٹولز اور لائسنس پہلے سے خود ہی ایکسیپٹ کر کے ریڈی کر دے گا
+      - name: Set up Android SDK & Accept Licenses
+        uses: android-actions/setup-android@v3
+        with:
+          log-accepted-licenses: false
+
+      # 🎯 یہ کمانڈز آپ کی buildozer.spec فائل کی سیٹنگز کو اینڈرائیڈ سرور کے مطابق فکس کریں گی
       - name: Auto Fix Buildozer Spec Settings
         run: |
           sed -i 's/^#\? \?android.api =.*/android.api = 33/g' buildozer.spec
           sed -i 's/^#\? \?android.ndk =.*/android.ndk = 25b/g' buildozer.spec
           sed -i 's/^#\? \?android.build_tools_version =.*/android.build_tools_version = 33.0.0/g' buildozer.spec
-          echo "بیک اپ سیٹنگز لاک ہو گئیں۔"
 
-      - name: Auto Accept Licenses & Run Buildozer
+      - name: Run Buildozer Smoothly
         run: |
-          mkdir -p ~/.buildozer/android/platform/
-          
-          # جاوا 17 کا انوائرمنٹ سیٹ کرنا
+          # انوائرمنٹ سیٹ کرنا
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
-
-          # پائتھن ٹول چین کو ریڈی کرنا
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # مستحکم ورژن ہونے کی وجہ سے 'yes' سارے لائسنس کامیابی سے پاس کر دے گا
-          yes | buildozer android debug || true
+          # 🎯 اب کوئی پائپ 'yes' یا '|| true' نہیں چلے گا۔ بلڈوزر بالکل کلین اور آفیشل رن ہوگا
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AT-AI-APK
-          path: |
-            bin/*.apk
-            .buildozer/android/platform/build-*/*/bin/*.apk
+          path: bin/*.apk
+          if-no-files-found: error
