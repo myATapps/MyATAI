@@ -26,26 +26,36 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # گوگل کا آفیشل ایکشن جو لائسنس کو پہلے ہی اوکے کر دے گا
-      - name: Set up Android SDK & Accept Licenses
+      # 🎯 اصل جادو: گٹ ہب خود اینڈرائیڈ کے ٹولز اور لائسنس ورژن 33 پر سیٹ کرے گا
+      - name: Set up Android SDK & Force Version 33
         uses: android-actions/setup-android@v3
         with:
+          api-level: 33
+          build-tools: 33.0.0
           log-accepted-licenses: false
 
-      - name: Run Buildozer Smoothly
+      - name: Run Buildozer Forcing System SDK
         run: |
+          mkdir -p ~/.buildozer/android/platform/
+          
           # انوائرمنٹ سیٹ کرنا
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # اب بلڈوزر مجبور ہو کر 33.0.0 ہی چلائے گا
+          # 🎯 بلڈوزر کی آنکھیں بند کر کے اسے گٹ ہب والے اینڈرائیڈ پاتھ پر سیٹ کرنا
+          export ANDROIDSDK=$ANDROID_HOME
+          export ANDROIDAPI=33
+          
+          # بغیر کسی 'yes' یا پائپ کے بالکل کلین رن
           buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AT-AI-APK
-          path: bin/*.apk
+          path: |
+            bin/*.apk
+            .buildozer/android/platform/build-*/*/bin/*.apk
           if-no-files-found: error
