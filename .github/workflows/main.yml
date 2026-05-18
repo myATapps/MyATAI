@@ -8,15 +8,50 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 👑 یہ ہے وہ جادوئی ایکشن! اس کے اندر پائتھن، جاوا، اینڈرائیڈ 37 اور تمام لائسنس پہلے سے لاکڈ ہیں
-      - name: Build APK with Pre-Configured Buildozer Action
-        uses: ArtemGovorov/buildozer-action@v1
-        id: buildozer
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          workdir: .
-          buildozer_version: master
+          python-version: '3.10'
 
-      - name: Upload APK Artifact
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.36
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 👑 سب سے بڑا ماسٹر سٹیپ: سرور کے آفیشل اینڈرائیڈ ٹولز کے سارے لائسنس ایک سیکنڈ میں آٹو لاک کرنا
+      - name: Auto Accept Server Licenses
+        run: |
+          # گٹ ہب کے اپنے آفیشل اینڈرائیڈ مینیجر کا پاتھ سیٹ کرنا
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools/bin:$PATH
+          
+          # تمام لائسنسز کو 'yes' کی آٹو کمانڈ دینا (یہ صرف 2 سیکنڈ چلے گا، پائپ نہیں ٹوٹے گا)
+          echo "y" | sdkmanager --licenses || true
+          echo "سرور کے تمام آفیشل لائسنس لاک ہو گئے!"
+
+      # 🚀 بلڈوزر اب سرور کے آفیشل فولڈر کو ہی استعمال کرے گا، کوئی نیا فولڈر نہیں بنے گا
+      - name: Run Buildozer Forcing Official SDK
+        run: |
+          export JAVA_HOME=$JAVA_HOME_17_X64
+          export PATH=$JAVA_HOME/bin:$PATH
+          python -m pip install --upgrade python-for-android
+          export PATH=$pythonLocation/bin:$PATH
+          
+          # 🎯 بلڈوزر کو زبردستی سرور کے آفیشل اینڈرائیڈ پاتھ پر بائنڈ کرنا
+          export ANDROIDSDK=$ANDROID_HOME
+          export ANDROID_FORCE_ACCEPT_LICENSES=1
+          
+          # بغیر کسی مینوئل ورژن کے بالکل صاف رن تاکہ کوئی فائل مسنگ نہ ہو
+          buildozer android debug
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AT-AI-APK
