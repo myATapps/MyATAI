@@ -26,30 +26,24 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 👑 سب سے بڑا گیم چینجر سٹیپ: بلڈوزر کے متوقع فولڈرز پہلے ہی بنانا اور پاتھ فکس کرنا
+      # 👑 پاتھ اور لائسنس بالکل فکسڈ اور لاکڈ
       - name: Pre-create Buildozer SDK Layout and Fix SDK Manager Path
         run: |
-          # 1. بلڈوزر کے خفیہ فولڈرز کو پہلے ہی مینوئلی تیار کرنا
           mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
           mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
           mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
           
-          # 2. گٹ ہب سرور پر موجود آفیشل اینڈرائیڈ مینیجر کو بلڈوزر کے فولڈر میں کاپی کرنا
           if [ -d "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" ]; then
             cp -r /usr/local/lib/android/sdk/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/
           fi
           
-          # 🎯 جادوئی لائن: بلڈوزر کے پرانے پاتھ (tools/bin) کو نئے پاتھ کے ساتھ مینوئلی لنک کرنا
           ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
           
-          # 3. ورژن 37 اور باقی تمام لائسنس فائلز کو پہلے ہی آٹو رائٹ (Lock) کر دینا
           echo -e "24333f8a63b6825ea50157f88340d3265b9099d6\n8cce3afb685bc2fac41c43633d1a37114b35261f\nde5b3312b299b25654117e0a7991475c293a61cd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
           echo -e "84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
-          
-          echo "فولڈرز کا پاتھ اور لائسنس آٹو موڈ پر لاک ہو گئے!"
 
-      # 🚀 اب بلڈوزر بالکل ہنس کے چلے گا کیونکہ اسے ہر فائل اپنے راستے پر ملے گی
-      - name: Run Buildozer Smoothly
+      # 🚀 اب ہم فل ڈی بگ کمانڈ رن کریں گے تاکہ اصل بیماری سامنے آئے
+      - name: Run Buildozer with Full Debug Logging
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
@@ -58,7 +52,8 @@ jobs:
           
           export ANDROID_FORCE_ACCEPT_LICENSES=1
           
-          buildozer android debug
+          # '-v' لگانے سے پورا تفصیلی لاگ پرنٹ ہوگا
+          buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
