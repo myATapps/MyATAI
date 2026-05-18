@@ -26,33 +26,34 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 سب سے اہم سٹیپ: یہ گوگل کے سارے ٹولز اور لائسنس پہلے سے خود ہی ایکسیپٹ کر کے ریڈی کر دے گا
-      - name: Set up Android SDK & Accept Licenses
+      # گوگل کا آفیشل لائسنس ہینڈلر سرور پر انسٹال کرنا
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
           log-accepted-licenses: false
 
-      # 🎯 یہ کمانڈز آپ کی buildozer.spec فائل کی سیٹنگز کو اینڈرائیڈ سرور کے مطابق فکس کریں گی
-      - name: Auto Fix Buildozer Spec Settings
+      - name: Run Buildozer Forcing Stable Version
         run: |
-          sed -i 's/^#\? \?android.api =.*/android.api = 33/g' buildozer.spec
-          sed -i 's/^#\? \?android.ndk =.*/android.ndk = 25b/g' buildozer.spec
-          sed -i 's/^#\? \?android.build_tools_version =.*/android.build_tools_version = 33.0.0/g' buildozer.spec
-
-      - name: Run Buildozer Smoothly
-        run: |
-          # انوائرمنٹ سیٹ کرنا
+          mkdir -p ~/.buildozer/android/platform/
+          
+          # جاوا 17 اور پائتھن ٹول چین سیٹ کرنا
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # 🎯 اب کوئی پائپ 'yes' یا '|| true' نہیں چلے گا۔ بلڈوزر بالکل کلین اور آفیشل رن ہوگا
-          buildozer android debug
+          # 🎯 فائنل فکس: کمانڈ کے اندر ہی زبردستی ورژن 33.0.0 پر لاک کر دینا تاکہ spec فائل کا رولا ہی ختم ہو جائے
+          buildozer android debug \
+            --androidapi=33 \
+            --androidndk=25b \
+            --ndk-api=33 \
+            --build-tools-version=33.0.0
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AT-AI-APK
-          path: bin/*.apk
+          path: |
+            bin/*.apk
+            .buildozer/android/platform/build-*/*/bin/*.apk
           if-no-files-found: error
