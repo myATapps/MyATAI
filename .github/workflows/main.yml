@@ -26,20 +26,15 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 سب سے بڑا جادوئی سٹیپ: بلڈوزر کے اپنے خفیہ فولڈر میں ورژن 37 کے لائسنس مینوئلی رائٹ (Write) کرنا
+      # 🎯 بلڈوزر کے اپنے خفیہ فولڈر میں ورژن 37 کے لائسنس پہلے ہی لکھ دینا
       - name: Inject Android Licenses directly into Buildozer
         run: |
-          # بلڈوزر کا مخصوص لائسنس فولڈر مینوئلی بنانا
           mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-          
-          # اینڈرائیڈ کے آفیشل ڈیجیٹل لائسنس ہیشز (Hashes) کو فائل میں سیو کرنا
-          # یہ وہی کوڈز ہیں جو 'yes' دبانے پر جنریٹ ہوتے ہیں، ہم انہیں پہلے ہی فائل میں لکھ رہے ہیں
           echo -e "24333f8a63b6825ea50157f88340d3265b9099d6\n8cce3afb685bc2fac41c43633d1a37114b35261f\nde5b3312b299b25654117e0a7991475c293a61cd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
           echo -e "84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
-          
-          echo "بلڈوزر کے خفیہ فولڈر میں لائسنس کامیابی سے انجیکٹ کر دیے گئے ہیں!"
+          echo "لائسنس فائلز کامیابی سے سیٹ ہو گئیں!"
 
-      # 🚀 اب بلڈوزر رن کریں، کوئی 'yes' نہیں، کوئی پائپ نہیں، کوئی جھنجھٹ نہیں!
+      # 🚀 اب بلڈوزر چلے گا اور خود ہی spec فائل سے ورژن 37 اٹھا لے گا
       - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
