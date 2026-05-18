@@ -26,27 +26,30 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 گوگل کا آفیشل ایس ڈی کے مینیجر جو بیک گراؤنڈ میں سب ریڈی کرے گا
-      - name: Set up Android SDK
+      # 🎯 سٹیپ 1: گوگل کا آفیشل ٹول رن کر کے پہلے سے ہی اینڈرائیڈ 33 کو لوڈ کرنا
+      - name: Set up Android SDK & Force Version 33
         uses: android-actions/setup-android@v3
+        with:
+          api-level: 33
+          build-tools: 33.0.0
+          log-accepted-licenses: false
 
-      # 🎯 سب سے پاورفل سٹیپ: یہ کمانڈ بلڈوزر کے فولڈر میں جا کر ورژن 37 کے لائسنس خود ہی سائن کر دے گی
-      - name: Manually Accept All Buildozer Licenses
+      # 🎯 سٹیپ 2: بلڈوزر کو ورژن 33 پر لاک کرنا اور اینڈ تک 'yes' کی کمانڈ چلانا
+      - name: Run Buildozer Locked on 33 with Yes Command
         run: |
-          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/
-          # بلڈوزر کے اپنے مینیجر کو رن کر کے زبردستی لائسنس اوکے کرنا
-          yes | sdkmanager --sdk_root=/home/runner/.buildozer/android/platform/android-sdk "build-tools;37.0.0" || true
-          echo "ورژن 37 کے لائسنس زبردستی منظور کر لیے گئے ہیں!"
-
-      - name: Run Buildozer Smoothly
-        run: |
+          # جاوا اور پائتھن پاتھ سیٹ کرنا
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
           
-          # اب بلڈوزر بغیر کسی سوال کے سیدھا چلے گا
-          buildozer android debug
+          # بلڈوزر کو زبردستی سسٹم کے اینڈرائیڈ 33 والے پاتھ پر سیٹ کرنا
+          export ANDROIDSDK=$ANDROID_HOME
+          export ANDROIDAPI=33
+          
+          # آپ کی لاجک: کچھ ٹائم کے لیے اور اینڈ تک 'yes' کی کمانڈ کو بلڈوزر کے ساتھ جوڑنا
+          # یہ کمانڈ ورژن 33 کی بلڈنگ کے دوران آنے والے ہر سوال کو خود ہی 'y' پاس کرے گی
+          yes | buildozer android debug --androidapi=33 --build-tools-version=33.0.0
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
