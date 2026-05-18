@@ -17,8 +17,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip
-          pip install --upgrade pip
-          pip install buildozer cython==0.29.36
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -26,38 +24,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 جادوئی اور سب سے پاورفل سٹیپ: یہ آپ کی فائل میں سے ورژن 37 کا نام و نشان مٹا دے گا
-      - name: Force Fix buildozer.spec File Internals
-        run: |
-          # اگر فائل میں کہیں بھی build_tools_version لکھا ہے تو اسے زبردستی 33.0.0 کر دو
-          sed -i 's/^#\? \?android.build_tools_version =.*/android.build_tools_version = 33.0.0/g' buildozer.spec
-          # اگر وہ لائن سرے سے موجود ہی نہیں ہے، تو فائل کے آخر میں مینوئلی لکھ دو
-          if ! grep -q "android.build_tools_version = 33.0.0" buildozer.spec; then
-            echo "android.build_tools_version = 33.0.0" >> buildozer.spec
-          fi
-          # اینڈرائیڈ API اور NDK کو بھی فکس کرنا
-          sed -i 's/^#\? \?android.api =.*/android.api = 33/g' buildozer.spec
-          sed -i 's/^#\? \?android.ndk =.*/android.ndk = 25b/g' buildozer.spec
-          echo "فائل کے اندر گھس کر ورژن 33 لاک کر دیا گیا ہے!"
+      # 🎯 کِوی کا اصل آفیشل ایکشن (درست ورژن کے ساتھ): یہ لائسنس اور پائپ کا رولا خود ہی ختم کر دے گا
+      - name: Build APK with Official Buildozer Action
+        uses: kivy/buildozer-action@master
+        id: buildozer
+        with:
+          command: 'buildozer android debug'
 
-      - name: Auto Accept Licenses & Run Buildozer
-        run: |
-          mkdir -p ~/.buildozer/android/platform/
-          
-          # جاوا 17 اور پائتھن کا انوائرمنٹ ریڈی کرنا
-          export JAVA_HOME=$JAVA_HOME_17_X64
-          export PATH=$JAVA_HOME/bin:$PATH
-          python -m pip install --upgrade python-for-android
-          export PATH=$pythonLocation/bin:$PATH
-          
-          # 🎯 اب بلڈوزر مجبور ہے، وہ ورژن 37 پر جا ہی نہیں سکتا۔ 'yes' اب سارے لائسنس فوراً پاس کر دے گا
-          yes | buildozer android debug || true
-
+      # 🎯 فائنل بنی ہوئی اے پی کے فائل کو ڈاؤن لوڈ کے لیے سمری پیج پر لانا
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AT-AI-APK
-          path: |
-            bin/*.apk
-            .buildozer/android/platform/build-*/*/bin/*.apk
-          if-no-files-found: error
+          path: ${{ steps.buildozer.outputs.artifact-path }}
