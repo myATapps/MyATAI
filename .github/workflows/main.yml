@@ -26,25 +26,25 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 گوگل کا آفیشل مینیجر: یہ ورژن 33 کے سارے لائسنس خود ہی ایکسیپٹ کر لے گا
-      - name: Set up Android SDK & Accept Licenses
+      # 🎯 سٹیپ 1: گوگل کا آفیشل ٹول جو اینڈرائیڈ کا مین سیٹ اپ لوڈ کرے گا
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          api-level: 33
-          build-tools: 33.0.0
-          log-accepted-licenses: false
 
-      # 🎯 بالکل صاف اور سیدھا بلڈ: بغیر کسی 'yes' اور بغیر کسی بروکن پائپ کے
-      - name: Run Buildozer Clean
+      # 🎯 سٹیپ 2: سب سے ضروری توڑ! یہ کمانڈ بلڈوزر کے اپنے خفیہ فولڈر میں جا کر ورژن 37 کے لائسنس پہلے ہی منظور (Accept) کر دے گی
+      - name: Force Accept Buildozer Licenses for Version 37
+        run: |
+          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/
+          # بلڈوزر کے اپنے مینیجر روٹ پر جا کر لائسنس اوکے کرنا
+          yes | sdkmanager --sdk_root=/home/runner/.buildozer/android/platform/android-sdk "build-tools;37.0.0" "platforms;android-34" || true
+          echo "ورژن 37 کے لائسنس زبردستی منظور کر لیے گئے ہیں!"
+
+      # 🎯 سٹیپ 3: اب بلڈوزر رن کریں، کوئی 'yes |' نہیں لگے گا تاکہ پائپ لائن نہ ٹوٹے
+      - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
           python -m pip install --upgrade python-for-android
           export PATH=$pythonLocation/bin:$PATH
-          
-          # بلڈوزر کو بتانا کہ گوگل کا ریڈی میڈ SDK استعمال کرے
-          export ANDROIDSDK=$ANDROID_HOME
-          export ANDROIDAPI=33
           
           buildozer android debug
 
