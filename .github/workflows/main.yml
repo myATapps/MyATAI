@@ -26,12 +26,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🔥 اینڈرائیڈ کے تمام ٹولز اور پاتھس کو مینوئلی پہلے سے لاک کرنا
-      - name: Pre-Install Core Android SDK and Fix Paths
+      # 👑 اینڈرائیڈ کے ٹولز اور مسنگ فولڈرز کا پکا علاج
+      - name: Pre-Install Core Android SDK and Core Folders
         run: |
+          # تمام ضروری فولڈرز پہلے ہی مینوئلی بنانا
           mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
           mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
           mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
+          mkdir -p ~/.buildozer/android/platform
           
           # آفیشل مینیجر فائلز کی کاپی
           if [ -d "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" ]; then
@@ -39,21 +41,24 @@ jobs:
             cp -r /usr/local/lib/android/sdk/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
           fi
           
-          # بلڈ ٹولز ورژن 34.0.0 (جو کہ کِوی کے لیے سب سے زیادہ اسٹیبل ہے) کو پہلے ہی ڈاؤن لوڈ کرنا
+          # بلڈ ٹولز ورژن 34.0.0 کو ڈاؤن لوڈ کرنا
           export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools/bin:$PATH
           echo "y" | sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-33" || true
           
-          # ڈاؤن لوڈ شدہ فائلز کو بلڈوزر کے ہوم فولڈر میں ٹرانسفر کرنا
           if [ -d "/usr/local/lib/android/sdk/build-tools/34.0.0" ]; then
             mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
             cp -r /usr/local/lib/android/sdk/build-tools/34.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/
           fi
           
-          # آفیشل لائسنس ہیشز رائٹ کرنا
+          # آفیشل لائسنس لاک فائلز بنانا
           echo -e "24333f8a63b6825ea50157f88340d3265b9099d6\n8cce3afb685bc2fac41c43633d1a37114b35261f\nde5b3312b299b25654117e0a7991475c293a61cd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo "اینڈرائیڈ پلیٹ فارم ٹولز کامیابی سے لاک ہو گئے!"
+          
+          # 🎯 مسنگ فولڈر کا پکا توڑ: گٹ ہب سے آفیشل پیکیج ڈاؤن لوڈ کر کے سیٹ کرنا
+          git clone https://github.com/kivy/python-for-android.git ~/.buildozer/android/platform/python-for-android
+          
+          echo "اینڈرائیڈ ٹولز اور پائتھن پلیٹ فارم فولڈرز ۱۰۰٪ لاک ہو گئے!"
 
-      # 🚀 بلڈوزر کو مکمل کلین موڈ اور تفصیلی لاگ کے ساتھ رن کرنا
+      # 🚀 فائنل بلڈ رن
       - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
@@ -62,9 +67,6 @@ jobs:
           export PATH=$pythonLocation/bin:$PATH
           
           export ANDROID_FORCE_ACCEPT_LICENSES=1
-          
-          # پرانی کسی بھی خراب کیشے کو صاف کرنا تاکہ فائنل ایپ تازہ پیک ہو
-          buildozer android clean
           
           echo "فائنل ایپ کمپلیٹ پیکنگ شروع ہو رہی ہے..."
           buildozer -v android debug
