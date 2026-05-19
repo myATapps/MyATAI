@@ -26,16 +26,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 👑 اینڈرائیڈ کے ٹولز اور مسنگ فولڈرز کا پکا علاج
+      # 👑 اینڈرائیڈ کے ٹولز اور فولڈرز کو محفوظ طریقے سے لنک کرنا
       - name: Pre-Install Core Android SDK and Core Folders
         run: |
-          # تمام ضروری فولڈرز پہلے ہی مینوئلی بنانا
+          # ضروری فولڈرز بنانا (کسی پرانی فائل کو ڈیلیٹ کیے بغیر)
           mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
           mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
           mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
           mkdir -p ~/.buildozer/android/platform
           
-          # آفیشل مینیجر فائلز کی کاپی
+          # مینیجر فائلز کی کاپی
           if [ -d "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" ]; then
             cp -r /usr/local/lib/android/sdk/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/
             cp -r /usr/local/lib/android/sdk/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
@@ -53,12 +53,14 @@ jobs:
           # آفیشل لائسنس لاک فائلز بنانا
           echo -e "24333f8a63b6825ea50157f88340d3265b9099d6\n8cce3afb685bc2fac41c43633d1a37114b35261f\nde5b3312b299b25654117e0a7991475c293a61cd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
           
-          # 🎯 مسنگ فولڈر کا پکا توڑ: گٹ ہب سے آفیشل پیکیج ڈاؤن لوڈ کر کے سیٹ کرنا
-          git clone https://github.com/kivy/python-for-android.git ~/.buildozer/android/platform/python-for-android
+          # پائتھن فور اینڈرائیڈ کا فولڈر کلون کرنا (اگر پہلے سے موجود نہ ہو)
+          if [ ! -d "~/.buildozer/android/platform/python-for-android" ]; then
+            git clone https://github.com/kivy/python-for-android.git ~/.buildozer/android/platform/python-for-android || true
+          fi
           
-          echo "اینڈرائیڈ ٹولز اور پائتھن پلیٹ فارم فولڈرز ۱۰۰٪ لاک ہو گئے!"
+          echo "اینڈرائیڈ ٹولز اور فولڈرز بالکل محفوظ اور تیار ہیں!"
 
-      # 🚀 فائنل بلڈ رن
+      # 🚀 بلڈوزر رن (بغیر کسی کلین کمانڈ کے)
       - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
@@ -68,7 +70,7 @@ jobs:
           
           export ANDROID_FORCE_ACCEPT_LICENSES=1
           
-          echo "فائنل ایپ کمپلیٹ پیکنگ شروع ہو رہی ہے..."
+          echo "ایپ کی فائنل پیکنگ شروع ہو رہی ہے..."
           buildozer -v android debug
 
       - name: Upload APK
