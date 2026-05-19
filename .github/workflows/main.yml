@@ -26,47 +26,68 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 👑 اینڈرائیڈ کے ٹولز اور فولڈرز کو محفوظ طریقے سے لنک کرنا
+      # Fix: Robustly set up Android SDK, define ANDROID_HOME and ensure sdkmanager is correctly used.
       - name: Pre-Install Core Android SDK and Core Folders
         run: |
-          # ضروری فولڈرز بنانا (کسی پرانی فائل کو ڈیلیٹ کیے بغیر)
-          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
-          mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
-          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-          mkdir -p ~/.buildozer/android/platform
+          # Define ANDROID_HOME and ANDROID_SDK_ROOT at the beginning.
+          export ANDROID_HOME="${HOME}/.buildozer/android/platform/android-sdk"
+          export ANDROID_SDK_ROOT="${ANDROID_HOME}"
           
-          # مینیجر فائلز کی کاپی
-          if [ -d "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" ]; then
-            cp -r /usr/local/lib/android/sdk/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/
-            cp -r /usr/local/lib/android/sdk/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
-          fi
-          
-          # بلڈ ٹولز ورژن 34.0.0 کو ڈاؤن لوڈ کرنا
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools/bin:$PATH
-          echo "y" | sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-33" || true
-          
-          if [ -d "/usr/local/lib/android/sdk/build-tools/34.0.0" ]; then
-            mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
-            cp -r /usr/local/lib/android/sdk/build-tools/34.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/
-          fi
-          
-          # آفیشل لائسنس لاک فائلز بنانا
-          echo -e "24333f8a63b6825ea50157f88340d3265b9099d6\n8cce3afb685bc2fac41c43633d1a37114b35261f\nde5b3312b299b25654117e0a7991475c293a61cd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          
-          # پائتھن فور اینڈرائیڈ کا فولڈر کلون کرنا (اگر پہلے سے موجود نہ ہو)
-          if [ ! -d "~/.buildozer/android/platform/python-for-android" ]; then
-            git clone https://github.com/kivy/python-for-android.git ~/.buildozer/android/platform/python-for-android || true
-          fi
-          
-          echo "اینڈرائیڈ ٹولز اور فولڈرز بالکل محفوظ اور تیار ہیں!"
+          # Create necessary base directories
+          mkdir -p "${ANDROID_HOME}/cmdline-tools" # Parent for 'latest'
+          mkdir -p "${ANDROID_HOME}/licenses"
+          mkdir -p "${HOME}/.buildozer/android/platform"
 
-      # 🚀 بلڈوزر رن (بغیر کسی کلین کمانڈ کے)
+          # Define the path where sdkmanager *should* be or *will be*
+          SDK_MANAGER_BIN="${ANDROID_HOME}/cmdline-tools/latest/bin"
+          
+          # Add SDK paths to PATH for immediate use
+          export PATH="${SDK_MANAGER_BIN}:${ANDROID_HOME}/platform-tools:${PATH}"
+
+          # Check if cmdline-tools/latest/bin already exists and contains sdkmanager from pre-installed SDK
+          if [ -d "/usr/local/lib/android/sdk/cmdline-tools/latest" ] && \
+             [ -f "/usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager" ]; then
+            echo "Copying existing cmdline-tools from runner..."
+            cp -r /usr/local/lib/android/sdk/cmdline-tools/latest/* "${ANDROID_HOME}/cmdline-tools/"
+          else
+            echo "Pre-installed cmdline-tools not found or incomplete. Downloading command-line tools..."
+            # Download cmdline-tools explicitly for a reliable setup
+            wget -q https://dl.google.com/android/repository/commandlinetools-linux-8583929_latest.zip -O cmdline-tools.zip
+            unzip -q cmdline-tools.zip -d "${ANDROID_HOME}/cmdline-tools"
+            mv "${ANDROID_HOME}/cmdline-tools/cmdline-tools" "${ANDROID_HOME}/cmdline-tools/latest" # Correct internal structure
+            rm cmdline-tools.zip
+            chmod -R +x "${ANDROID_HOME}/cmdline-tools/latest" # Ensure executables are runnable
+          fi
+
+          # Now sdkmanager should be in PATH and available.
+          # Install/update required SDK components.
+          echo "Installing/updating Android SDK components..."
+          # The sdkmanager itself is installed as part of cmdline-tools,
+          # so installing "cmdline-tools;latest" ensures it's fully present and updated.
+          echo "y" | sdkmanager --install "cmdline-tools;latest" "platform-tools" "build-tools;34.0.0" "platforms;android-33" || true
+
+          # Accept licenses explicitly using sdkmanager (more robust than file copy)
+          echo "y" | sdkmanager --licenses || true
+
+          # Create buildozer-specific license file (as in original script for buildozer's internal checks)
+          echo -e "24333f8a63b6825ea50157f88340d3265b9099d6\n8cce3afb685bc2fac41c43633d1a37114b35261f\nde5b3312b299b25654117e0a7991475c293a61cd" > "${ANDROID_HOME}/licenses/android-sdk-license"
+          
+          # Clone python-for-android if not already present
+          if [ ! -d "${HOME}/.buildozer/android/platform/python-for-android" ]; then
+            echo "Cloning python-for-android..."
+            git clone https://github.com/kivy/python-for-android.git "${HOME}/.buildozer/android/platform/python-for-android" || true
+          else
+            echo "python-for-android already exists."
+          fi
+          
+          echo "Android tools and folders are set up!"
+
+      # Fix: Removed redundant PATH modification.
       - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
           python -m pip install --upgrade python-for-android
-          export PATH=$pythonLocation/bin:$PATH
           
           export ANDROID_FORCE_ACCEPT_LICENSES=1
           
@@ -79,3 +100,4 @@ jobs:
           name: AT-AI-APK
           path: bin/*.apk
           if-no-files-found: error
+```
