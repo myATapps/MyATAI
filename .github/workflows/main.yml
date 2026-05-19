@@ -13,10 +13,11 @@ jobs:
         with:
           python-version: '3.10'
 
+      # یہاں ہم نے ورچوئل ڈسپلے (xvfb) اور ضروری گرافکس لائبریریاں شامل کر دی ہیں
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip
+          sudo apt-get install -y ccache git libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev unzip xvfb x11-utils
           pip install --upgrade pip
           pip install buildozer cython==0.29.36
 
@@ -54,7 +55,8 @@ jobs:
           
           echo "اینڈرائیڈ ٹولز اور فولڈرز بالکل تیار ہیں!"
 
-      - name: Run Buildozer Smoothly
+      # 🚀 بلڈوزر رن (ورچوئل ڈسپلے ایکٹیویشن کے ساتھ)
+      - name: Run Buildozer Smoothly with Virtual Display
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
@@ -63,8 +65,9 @@ jobs:
           
           export ANDROID_FORCE_ACCEPT_LICENSES=1
           
-          echo "ایپ کی فائنل پیکنگ شروع ہو رہی ہے..."
-          buildozer -v android debug
+          echo "ورچوئل اسکرین سٹارٹ کی جا رہی ہے..."
+          # کِوی کو کریش ہونے سے بچانے کے لیے ورچوئل اسکرین آن کرنا
+          xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
