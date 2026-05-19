@@ -26,36 +26,35 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 👑 ۱۔ بلڈوزر کا متوقع ڈھانچہ پہلے ہی تیار کرنا اور مینیجر کاپی کرنا
-      - name: Build Exact SDK Structural Layout
+      # 🔥 اینڈرائیڈ کے تمام ٹولز اور پاتھس کو مینوئلی پہلے سے لاک کرنا
+      - name: Pre-Install Core Android SDK and Fix Paths
         run: |
-          # بلڈوزر کے دونوں ممکنہ فولڈرز مینوئلی بنانا
           mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
           mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
           mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
           
-          # سرور پر موجود آفیشل مینیجر کو بلڈوزر کے فولڈرز میں بھرنا
+          # آفیشل مینیجر فائلز کی کاپی
           if [ -d "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" ]; then
             cp -r /usr/local/lib/android/sdk/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/
             cp -r /usr/local/lib/android/sdk/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
           fi
           
-          # سرور کے مینیجر سے پہلے ہی ورژن 37 ڈاؤن لوڈ کروا لینا
+          # بلڈ ٹولز ورژن 34.0.0 (جو کہ کِوی کے لیے سب سے زیادہ اسٹیبل ہے) کو پہلے ہی ڈاؤن لوڈ کرنا
           export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools/bin:$PATH
-          echo "y" | sdkmanager "build-tools;37.0.0" "platform-tools" || true
+          echo "y" | sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-33" || true
           
-          # ڈاؤن لوڈ شدہ فائلز بلڈوزر کے فولڈر میں ٹرانسفر کرنا
-          if [ -d "/usr/local/lib/android/sdk/build-tools/37.0.0" ]; then
+          # ڈاؤن لوڈ شدہ فائلز کو بلڈوزر کے ہوم فولڈر میں ٹرانسفر کرنا
+          if [ -d "/usr/local/lib/android/sdk/build-tools/34.0.0" ]; then
             mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
-            cp -r /usr/local/lib/android/sdk/build-tools/37.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/
+            cp -r /usr/local/lib/android/sdk/build-tools/34.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/
           fi
           
-          # ڈیجیٹل لائسنس لاک فائلز بنانا
+          # آفیشل لائسنس ہیشز رائٹ کرنا
           echo -e "24333f8a63b6825ea50157f88340d3265b9099d6\n8cce3afb685bc2fac41c43633d1a37114b35261f\nde5b3312b299b25654117e0a7991475c293a61cd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo "بیک گراؤنڈ فولڈرز اور ٹولز بالکل تیار ہیں!"
+          echo "اینڈرائیڈ پلیٹ فارم ٹولز کامیابی سے لاک ہو گئے!"
 
-      # 🚀 ۲۔ بلڈوزر رن کرنا لمیٹڈ ٹائم 'yes' کمانڈ کے ساتھ
-      - name: Run Buildozer with Limited Time Yes
+      # 🚀 بلڈوزر کو مکمل کلین موڈ اور تفصیلی لاگ کے ساتھ رن کرنا
+      - name: Run Buildozer Smoothly
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
           export PATH=$JAVA_HOME/bin:$PATH
@@ -64,13 +63,10 @@ jobs:
           
           export ANDROID_FORCE_ACCEPT_LICENSES=1
           
-          echo "بلڈوزر شروع ہو رہا ہے، لائسنس بائی پاس کے لیے لمیٹڈ 'yes' ایکٹو ہے..."
+          # پرانی کسی بھی خراب کیشے کو صاف کرنا تاکہ فائنل ایپ تازہ پیک ہو
+          buildozer android clean
           
-          # 🎯 جادوئی لاجک: 'yes' کا پائپ صرف 60 سیکنڈ چلے گا تاکہ پائپ ٹوٹے بغیر لائسنسز اوکے ہو جائیں
-          timeout 60s yes | buildozer -v android debug || true
-          
-          echo "محدود وقت پورا ہوا، اب فائنل بلڈ کمپلیٹ کی جا رہی ہے..."
-          # اب بلڈوزر کو کھلا رن دیا تاکہ وہ بغیر رکاوٹ کے APK فائل تیار کرے
+          echo "فائنل ایپ کمپلیٹ پیکنگ شروع ہو رہی ہے..."
           buildozer -v android debug
 
       - name: Upload APK
